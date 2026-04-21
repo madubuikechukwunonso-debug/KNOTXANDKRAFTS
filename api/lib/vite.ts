@@ -7,7 +7,7 @@ import path from "path";
 type App = Hono<{ Bindings: HttpBindings }>;
 
 export function serveStaticFiles(app: App) {
-  // Absolute path based on the bundled location of boot.js → always correct on Vercel
+  // Absolute path from the bundled dist/boot.js → always correct
   const publicPath = path.resolve(import.meta.dirname, "./public");
 
   app.use("*", serveStatic({ root: publicPath }));
