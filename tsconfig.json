@@ -8,8 +8,8 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
-      "@contracts/*": ["src/contracts/*"],
-      "@db/*": ["src/db/*"]
+      "@contracts/*": ["contracts/*"],
+      "@db/*": ["db/*"]
     },
 
     "allowSyntheticDefaultImports": true,
@@ -24,8 +24,5 @@
     "db",
     "contracts"
   ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ]
+  "exclude": ["node_modules", "dist"]
 }
