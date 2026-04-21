@@ -2,14 +2,30 @@
   "version": 2,
   "builds": [
     {
+      "src": "dist/public/**",
+      "use": "@vercel/static"
+    },
+    {
       "src": "dist/boot.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
+      "src": "/api/(.*)",
+      "dest": "/dist/boot.js"
+    },
+    {
+      "src": "/assets/(.*)",
+      "dest": "/dist/public/assets/$1"
+    },
+    {
+      "src": "/(.*\\.(js|css|png|jpg|jpeg|svg|ico|webp|gif|json|txt))$",
+      "dest": "/dist/public/$1"
+    },
+    {
       "src": "/(.*)",
-      "dest": "dist/boot.js"
+      "dest": "/dist/public/index.html"
     }
   ]
 }
