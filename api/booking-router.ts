@@ -2,7 +2,7 @@ import { z } from "zod";
 import { eq, and } from "drizzle-orm";
 import { createRouter, publicQuery, authedQuery, adminQuery } from "./middleware";
 import { getDb } from "./queries/connection";
-import { bookings } from "../../db/schema";
+import { bookings } from "@db/schema";
 
 const SERVICE_SLOTS: Record<string, string[]> = {
   "box-braids": ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00"],
