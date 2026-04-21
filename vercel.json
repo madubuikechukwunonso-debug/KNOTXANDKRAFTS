@@ -1,12 +1,31 @@
 {
   "version": 2,
-  "functions": {
-    "dist/boot.js": {}
-  },
+  "builds": [
+    {
+      "src": "dist/**/*",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "api/boot.ts",
+      "use": "@vercel/node"
+    }
+  ],
   "routes": [
     {
+      "src": "/api/(.*)",
+      "dest": "/api/boot.ts"
+    },
+    {
+      "src": "/assets/(.*)",
+      "dest": "/dist/assets/$1"
+    },
+    {
+      "src": "/(.*\\.(js|css|png|jpg|svg|ico))",
+      "dest": "/dist/$1"
+    },
+    {
       "src": "/(.*)",
-      "dest": "dist/boot.js"
+      "dest": "/dist/index.html"
     }
   ]
 }
