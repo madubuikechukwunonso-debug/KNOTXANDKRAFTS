@@ -1,12 +1,13 @@
 {
-  "name": "Knotxandkrafts",
+  "name": "KNOTZANDKRAFTS",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
+
   "scripts": {
     "dev": "vite",
 
-    "build": "vite build && esbuild api/boot.ts --platform=node --bundle --format=esm --outdir=dist --alias:@=./src --alias:@contracts=./src/contracts --alias:@db=./src/db --banner:js=\"import { createRequire } from 'module';const require = createRequire(import.meta.url);\"",
+    "build": "vite build && esbuild api/boot.ts --platform=node --bundle --format=esm --outdir=dist --abs-working-dir=. --alias:@=./src --alias:@contracts=./contracts --alias:@db=./db --banner:js=\"import { createRequire } from 'module';const require = createRequire(import.meta.url);\"",
 
     "start": "NODE_ENV=production node dist/boot.js",
 
