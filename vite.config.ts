@@ -11,4 +11,7 @@ export default defineConfig({
       '@db': fileURLToPath(new URL('./db', import.meta.url)),
     },
   },
+  build: {
+    outDir: './dist/public',   // ← this is the only change
+  },
 });
