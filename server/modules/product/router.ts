@@ -1,8 +1,16 @@
+import { asc, eq } from "drizzle-orm";
 import { z } from "zod";
-import { eq } from "drizzle-orm";
-import { createRouter, publicQuery, adminQuery } from "../../middleware";
-import { getDb } from "../../queries/connection";
 import { products } from "@db/schema";
+import { adminQuery, createRouter, publicQuery } from "../../middleware";
+import { getDb } from "../../queries/connection";
+
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
 
 export const productRouter = createRouter({
   list: publicQuery
@@ -16,77 +24,126 @@ export const productRouter = createRouter({
     )
     .query(async ({ input }) => {
       const db = getDb();
-      let query = db.select().from(products);
+
+      const allProducts = await db
+        .select()
+        .from(products)
+        .orderBy(asc(products.sortOrder), asc(products.id));
+
+      let filtered = allProducts.filter((product) => Boolean(product.active));
 
       if (input?.category) {
-        query = query.where(eq(products.category, input.category)) as typeof query;
+        filtered = filtered.filter(
+          (product) => product.category === input.category,
+        );
       }
-
-      const allProducts = await query;
 
       if (input?.featured) {
-        return allProducts.filter((p) => p.featured === 1);
+        filtered = filtered.filter((product) => product.featured === 1);
       }
 
-      return allProducts;
+      return filtered;
     }),
 
   getById: publicQuery
     .input(z.object({ id: z.number() }))
     .query(async ({ input }) => {
       const db = getDb();
+
       const result = await db
         .select()
         .from(products)
         .where(eq(products.id, input.id))
         .limit(1);
-      return result[0] || null;
+
+      return result[0] ?? null;
     }),
 
   create: adminQuery
     .input(
       z.object({
-        name: z.string().min(1),
+        name: z.string().min(2),
         description: z.string().optional(),
-        price: z.number().positive(),
-        image: z.string().optional(),
+        price: z.number().int().nonnegative(),
+        image: z.string().url().optional(),
         category: z.string().default("general"),
-        inventory: z.number().default(0),
+        inventory: z.number().int().nonnegative().default(0),
         featured: z.boolean().default(false),
+        active: z.boolean().default(true),
+        sortOrder: z.number().int().default(0),
+        priceCurrency: z.string().default("cad"),
       }),
     )
     .mutation(async ({ input }) => {
       const db = getDb();
+
       const result = await db.insert(products).values({
-        ...input,
+        name: input.name,
+        slug: slugify(input.name),
+        description: input.description,
+        price: input.price,
+        priceCurrency: input.priceCurrency,
+        image: input.image,
+        category: input.category,
+        inventory: input.inventory,
         featured: input.featured ? 1 : 0,
+        active: input.active ? 1 : 0,
+        sortOrder: input.sortOrder,
       });
+
       const id = Number(result[0].insertId);
-      return { id, ...input, featured: input.featured ? 1 : 0 };
+
+      const created = await db
+        .select()
+        .from(products)
+        .where(eq(products.id, id))
+        .limit(1);
+
+      return created[0];
     }),
 
   update: adminQuery
     .input(
       z.object({
         id: z.number(),
-        name: z.string().optional(),
+        name: z.string().min(2),
         description: z.string().optional(),
-        price: z.number().positive().optional(),
-        image: z.string().optional(),
-        category: z.string().optional(),
-        inventory: z.number().optional(),
-        featured: z.boolean().optional(),
+        price: z.number().int().nonnegative(),
+        image: z.string().url().optional(),
+        category: z.string().default("general"),
+        inventory: z.number().int().nonnegative().default(0),
+        featured: z.boolean().default(false),
+        active: z.boolean().default(true),
+        sortOrder: z.number().int().default(0),
+        priceCurrency: z.string().default("cad"),
       }),
     )
     .mutation(async ({ input }) => {
       const db = getDb();
-      const { id, ...data } = input;
-      const updateData: Record<string, unknown> = { ...data };
-      if (data.featured !== undefined) {
-        updateData.featured = data.featured ? 1 : 0;
-      }
-      await db.update(products).set(updateData).where(eq(products.id, id));
-      const result = await db.select().from(products).where(eq(products.id, id)).limit(1);
+
+      await db
+        .update(products)
+        .set({
+          name: input.name,
+          slug: slugify(input.name),
+          description: input.description,
+          price: input.price,
+          priceCurrency: input.priceCurrency,
+          image: input.image,
+          category: input.category,
+          inventory: input.inventory,
+          featured: input.featured ? 1 : 0,
+          active: input.active ? 1 : 0,
+          sortOrder: input.sortOrder,
+        })
+        .where(eq(products.id, input.id));
+
+      const result = await db
+        .select()
+        .from(products)
+        .where(eq(products.id, input.id))
+        .limit(1);
+
       return result[0];
     }),
 
@@ -94,7 +151,14 @@ export const productRouter = createRouter({
     .input(z.object({ id: z.number() }))
     .mutation(async ({ input }) => {
       const db = getDb();
-      await db.delete(products).where(eq(products.id, input.id));
+
+      await db
+        .update(products)
+        .set({
+          active: 0,
+        })
+        .where(eq(products.id, input.id));
+
       return { success: true };
     }),
 });
