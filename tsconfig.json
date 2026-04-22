@@ -1,0 +1,22 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "target": "ES2020",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@contracts/*": ["contracts/*"],
+      "@db/*": ["db/*"],
+      "@server/*": ["server/*"]
+    },
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true
+  },
+  "include": ["src", "api", "server", "db", "contracts"],
+  "exclude": ["node_modules", "dist", "server-dist"]
+}
