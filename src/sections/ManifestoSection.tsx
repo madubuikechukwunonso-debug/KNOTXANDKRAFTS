@@ -24,11 +24,12 @@ export default function ManifestoSection() {
     <section ref={ref} className="w-full bg-white py-24 lg:py-40">
       <div className="max-w-5xl mx-auto px-6 lg:px-12 text-center">
         <p
-          className={`font-serif text-2xl sm:text-3xl md:text-4xl lg:text-5xl leading-snug lg:leading-tight text-black/90 transition-all duration-1000 ${
+          className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-snug lg:leading-tight text-black/90 transition-all duration-1000 ${
             visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
           }`}
+          style={{ fontFamily: "cursive" }}
         >
-          Every strand tells a story, At KNOTXANDKRAFTS.
+          Every strand tells a story, at KNOTXANDKRAFTS.
         </p>
 
         <p
