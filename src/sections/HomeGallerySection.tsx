@@ -3,7 +3,7 @@ import { galleryImages } from "@/lib/galleryImages";
 import { ArrowRight } from "lucide-react";
 
 export default function HomeGallerySection() {
-  const featuredImages = galleryImages.slice(0, 4);
+  const featuredImages = galleryImages.slice(0, 3);
 
   return (
     <section className="bg-[#f7f3ee] px-6 py-20 md:px-10 lg:px-16">
@@ -32,14 +32,14 @@ export default function HomeGallerySection() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {featuredImages.map((image, index) => (
             <Link
               key={image.id}
               to="/gallery"
-              className={`group relative overflow-hidden bg-neutral-200 ${
-                index === 0 || index === 3 ? "sm:aspect-[3/4]" : "sm:aspect-[4/5]"
-              } aspect-[4/5]`}
+              className={`group relative overflow-hidden bg-neutral-200 aspect-[4/5] ${
+                index === 0 ? "sm:aspect-[3/4]" : "sm:aspect-[4/5]"
+              }`}
             >
               <img
                 src={image.src}
