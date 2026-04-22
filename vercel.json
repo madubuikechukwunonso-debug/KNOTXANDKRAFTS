@@ -3,7 +3,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "dist/public/**/*",
+      "src": "dist/**/*",
       "use": "@vercel/static"
     },
     {
@@ -18,15 +18,15 @@
     },
     {
       "src": "/assets/(.*)",
-      "dest": "/dist/public/assets/$1"
+      "dest": "/dist/assets/$1"
     },
     {
       "src": "/(.*\\.(js|css|png|jpg|jpeg|svg|ico|webp|gif|map|woff|woff2|ttf|eot))",
-      "dest": "/dist/public/$1"
+      "dest": "/dist/$1"
     },
     {
       "src": "/(.*)",
-      "dest": "/dist/public/index.html"
+      "dest": "/dist/index.html"
     }
   ]
 }
