@@ -156,7 +156,7 @@ export default function HeroSection() {
             className="mt-6 text-white/80 text-sm sm:text-base uppercase tracking-[0.3em] font-light"
             style={{ textShadow: "0 1px 8px rgba(0,0,0,0.6)" }}
           >
-            Luxury Hair Craft Since 2020
+            Luxury Hair Craft Since 2023
           </p>
         </div>
       </div>
