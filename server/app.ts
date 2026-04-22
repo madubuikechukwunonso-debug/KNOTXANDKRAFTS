@@ -28,7 +28,9 @@ app.use("/api/trpc/*", async (c) => {
   });
 });
 
-app.all("/api/*", (c) => c.json({ error: "Not Found" }, 404));
+app.all("/api/*", (c) => {
+  return c.json({ error: "Not Found" }, 404);
+});
 
 if (env.isProduction && !process.env.VERCEL) {
   const { serveStaticFiles } = await import("./lib/vite");
