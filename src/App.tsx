@@ -16,12 +16,12 @@ export default function App() {
     <CartProvider>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/shop" element={<Shop />} />
         <Route path="/booking" element={<Booking />} />
         <Route path="/gallery" element={<Gallery />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />
-        <Route path="/login" element={<Login />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/account" element={<Account />} />
         <Route path="*" element={<NotFound />} />
