@@ -1,8 +1,7 @@
 import { ErrorMessages } from "@contracts/constants";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
-import type { UnifiedRole } from "./context";
-import type { TrpcContext } from "./context";
+import type { TrpcContext, UnifiedRole } from "./context";
 
 const t = initTRPC.context<TrpcContext>().create({
   transformer: superjson,
@@ -11,9 +10,7 @@ const t = initTRPC.context<TrpcContext>().create({
 export const createRouter = t.router;
 export const publicQuery = t.procedure;
 
-const requireAuth = t.middleware(async (opts) => {
-  const { ctx, next } = opts;
-
+const requireAuth = t.middleware(async ({ ctx, next }) => {
   if (!ctx.unifiedUser) {
     throw new TRPCError({
       code: "UNAUTHORIZED",
@@ -28,13 +25,16 @@ const requireAuth = t.middleware(async (opts) => {
     });
   }
 
-  return next({ ctx: { ...ctx, unifiedUser: ctx.unifiedUser } });
+  return next({
+    ctx: {
+      ...ctx,
+      unifiedUser: ctx.unifiedUser,
+    },
+  });
 });
 
 function requireAnyRole(roles: UnifiedRole[]) {
-  return t.middleware(async (opts) => {
-    const { ctx, next } = opts;
-
+  return t.middleware(async ({ ctx, next }) => {
     if (!ctx.unifiedUser) {
       throw new TRPCError({
         code: "UNAUTHORIZED",
@@ -56,7 +56,12 @@ function requireAnyRole(roles: UnifiedRole[]) {
       });
     }
 
-    return next({ ctx: { ...ctx, unifiedUser: ctx.unifiedUser } });
+    return next({
+      ctx: {
+        ...ctx,
+        unifiedUser: ctx.unifiedUser,
+      },
+    });
   });
 }
 
@@ -67,4 +72,6 @@ export const staffQuery = authedQuery.use(
 export const adminQuery = authedQuery.use(
   requireAnyRole(["admin", "super_admin"]),
 );
-export const superAdminQuery = authedQuery.use(requireAnyRole(["super_admin"]));
+export const superAdminQuery = authedQuery.use(
+  requireAnyRole(["super_admin"]),
+);
