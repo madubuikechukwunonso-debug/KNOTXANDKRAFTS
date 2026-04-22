@@ -2,7 +2,7 @@ export type GalleryImage = {
   id: number;
   src: string;
   alt: string;
-  category: "knotless" | "stitch" | "creative" | "luxury";
+  category: "knotless" | "stitch braid" | "creative" | "luxury" | "atewo" | "chuku/up do";
 };
 
 export const galleryImages: GalleryImage[] = [
@@ -10,19 +10,19 @@ export const galleryImages: GalleryImage[] = [
     id: 1,
     src: "/images/hero/hero-1.jpg",
     alt: "Luxury braided hairstyle showcase 1",
-    category: "luxury",
+    category: "chuku/up do",
   },
   {
     id: 2,
     src: "/images/hero/hero-2.jpg",
     alt: "Luxury braided hairstyle showcase 2",
-    category: "knotless",
+    category: "atewo",
   },
   {
     id: 3,
     src: "/images/hero/hero-3.jpg",
     alt: "Luxury braided hairstyle showcase 3",
-    category: "creative",
+    category: "stitch braid",
   },
   {
     id: 4,
