@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && esbuild api/boot.ts --platform=node --bundle --format=esm --outdir=dist --alias:@=./src --alias:@contracts=./contracts --alias:@db=./db --banner:js=\"import { createRequire } from 'module';const require = createRequire(import.meta.url);\"",
-    "start": "NODE_ENV=production node dist/boot.js",
+    "build": "vite build && esbuild api/boot.ts --platform=node --bundle --format=esm --outdir=server-dist --alias:@=./src --alias:@contracts=./contracts --alias:@db=./db --banner:js=\"import { createRequire } from 'module';const require = createRequire(import.meta.url);\"",
+    "start": "NODE_ENV=production node server-dist/boot.js",
     "preview": "vite preview",
     "lint": "eslint .",
     "check": "tsc --noEmit",
