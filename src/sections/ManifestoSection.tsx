@@ -28,11 +28,7 @@ export default function ManifestoSection() {
             visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
           }`}
         >
-          Every strand tells a story. At KNOTXANDKRAFTS, braiding is more than
-          a hairstyle. It is care, technique, beauty, and expression woven
-          together with intention. We honor the richness of textured hair by
-          creating refined braided looks that feel elegant, lasting, and deeply
-          personal.
+          Every strand tells a story, At KNOTXANDKRAFTS.
         </p>
 
         <p
