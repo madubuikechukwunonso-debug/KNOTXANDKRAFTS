@@ -10,8 +10,15 @@ import { Paths } from "@contracts/constants";
 
 const app = new Hono<{ Bindings: HttpBindings }>();
 
-app.use(bodyLimit({ maxSize: 50 * 1024 * 1024 }));
+app.use(
+  "*",
+  bodyLimit({
+    maxSize: 50 * 1024 * 1024,
+  }),
+);
+
 app.get(Paths.oauthCallback, createOAuthCallbackHandler());
+
 app.use("/api/trpc/*", async (c) => {
   return fetchRequestHandler({
     endpoint: "/api/trpc",
@@ -20,23 +27,29 @@ app.use("/api/trpc/*", async (c) => {
     createContext,
   });
 });
-app.all("/api/*", (c) => c.json({ error: "Not Found" }, 404));
 
-export default app;
+app.all("/api/*", (c) => {
+  return c.json({ error: "Not Found" }, 404);
+});
 
-// ─────────────────────────────────────────────────────────────
-// Production setup (Vercel + local `npm start`)
-// ─────────────────────────────────────────────────────────────
 if (env.isProduction) {
   const { serveStaticFiles } = await import("./lib/vite");
   serveStaticFiles(app);
 
-  // ← ONLY start a real server locally (never on Vercel)
   if (!process.env.VERCEL) {
     const { serve } = await import("@hono/node-server");
-    const port = parseInt(process.env.PORT || "3000");
-    serve({ fetch: app.fetch, port }, () => {
-      console.log(`Server running on http://localhost:${port}/`);
-    });
+    const port = Number(process.env.PORT || 3000);
+
+    serve(
+      {
+        fetch: app.fetch,
+        port,
+      },
+      () => {
+        console.log(`Server running on http://localhost:${port}`);
+      },
+    );
   }
 }
+
+export default app;
