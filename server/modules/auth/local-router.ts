@@ -98,7 +98,6 @@ export const localAuthRouter = createRouter({
       }
 
       const user = users[0];
-
       const valid = await bcrypt.compare(input.password, user.passwordHash);
 
       if (!valid) {
