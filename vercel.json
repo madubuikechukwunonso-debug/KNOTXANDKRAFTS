@@ -1,9 +1,8 @@
 {
-  "version": 2,
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "dist/boot.js"
-    }
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    { "source": "/oauth/callback", "destination": "/api/boot" },
+    { "source": "/api/(.*)", "destination": "/api/boot" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
