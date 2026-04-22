@@ -3,66 +3,74 @@ import { Instagram, Mail } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="w-full bg-[#f6f6f6] border-t border-black/5 py-16 lg:py-20">
-      <div className="max-w-7xl mx-auto px-6 lg:px-12">
-        <div className="flex flex-col lg:flex-row justify-between gap-12">
-          {/* Brand */}
-          <div>
-            <Link to="/" className="font-serif text-2xl tracking-[0.15em]">
-              KNOTXANDKRAFTS
-            </Link>
-            <p className="mt-4 text-black/40 text-sm max-w-xs leading-relaxed">
-              Luxury hair braiding and curated hair care products.
-              Crafted with intention, delivered with care.
-            </p>
-          </div>
+    <footer className="bg-black px-6 py-16 text-white md:px-10 lg:px-16">
+      <div className="mx-auto grid max-w-7xl gap-12 md:grid-cols-4">
+        {/* Brand */}
+        <div className="md:col-span-2">
+          <h2 className="font-serif text-3xl tracking-[0.2em]">
+            KNOTXANDKRAFTS
+          </h2>
+          <p className="mt-4 max-w-md text-sm leading-7 text-white/65">
+            Luxury hair braiding and curated hair care products. Crafted with
+            intention, delivered with care.
+          </p>
+        </div>
 
-          {/* Links */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 lg:gap-16">
-            <div>
-              <h4 className="text-xs uppercase tracking-widest font-medium mb-4">Explore</h4>
-              <ul className="space-y-3">
-                <li><Link to="/shop" className="text-sm text-black/50 hover:text-black transition-colors">Shop</Link></li>
-                <li><Link to="/booking" className="text-sm text-black/50 hover:text-black transition-colors">Book</Link></li>
-                <li><Link to="/account" className="text-sm text-black/50 hover:text-black transition-colors">Account</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-xs uppercase tracking-widest font-medium mb-4">Company</h4>
-              <ul className="space-y-3">
-                <li><span className="text-sm text-black/50 cursor-pointer hover:text-black transition-colors">About</span></li>
-                <li><span className="text-sm text-black/50 cursor-pointer hover:text-black transition-colors">Careers</span></li>
-                <li><span className="text-sm text-black/50 cursor-pointer hover:text-black transition-colors">Press</span></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-xs uppercase tracking-widest font-medium mb-4">Connect</h4>
-              <ul className="space-y-3">
-                <li>
-                  <a href="#" className="text-sm text-black/50 hover:text-black transition-colors flex items-center gap-2">
-                    <Instagram className="w-4 h-4" /> Instagram
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-sm text-black/50 hover:text-black transition-colors flex items-center gap-2">
-                    <Mail className="w-4 h-4" /> Contact
-                  </a>
-                </li>
-              </ul>
-            </div>
+        {/* Links */}
+        <div>
+          <h3 className="mb-4 text-xs uppercase tracking-[0.3em] text-white/55">
+            Explore
+          </h3>
+          <div className="flex flex-col gap-3 text-sm text-white/80">
+            <Link to="/shop" className="transition-opacity hover:opacity-60">
+              Shop
+            </Link>
+            <Link to="/booking" className="transition-opacity hover:opacity-60">
+              Book
+            </Link>
+            <Link to="/gallery" className="transition-opacity hover:opacity-60">
+              Gallery
+            </Link>
+            <Link to="/account" className="transition-opacity hover:opacity-60">
+              Account
+            </Link>
           </div>
         </div>
 
-        {/* Bottom */}
-        <div className="mt-16 pt-8 border-t border-black/5 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-xs text-black/30">
-            &copy; {new Date().getFullYear()} KNOTXANDKRAFTS. All rights reserved.
-          </p>
-          <div className="flex gap-6">
-            <span className="text-xs text-black/30 cursor-pointer hover:text-black/50 transition-colors">Privacy</span>
-            <span className="text-xs text-black/30 cursor-pointer hover:text-black/50 transition-colors">Terms</span>
-            <span className="text-xs text-black/30 cursor-pointer hover:text-black/50 transition-colors">Cookies</span>
+        <div>
+          <h3 className="mb-4 text-xs uppercase tracking-[0.3em] text-white/55">
+            Connect
+          </h3>
+          <div className="flex flex-col gap-3 text-sm text-white/80">
+            <a
+              href="https://instagram.com"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 transition-opacity hover:opacity-60"
+            >
+              <Instagram size={16} />
+              Instagram
+            </a>
+
+            <a
+              href="mailto:hello@knotxandkrafts.com"
+              className="inline-flex items-center gap-2 transition-opacity hover:opacity-60"
+            >
+              <Mail size={16} />
+              Contact
+            </a>
           </div>
+        </div>
+      </div>
+
+      {/* Bottom */}
+      <div className="mx-auto mt-14 flex max-w-7xl flex-col gap-4 border-t border-white/10 pt-6 text-xs uppercase tracking-[0.25em] text-white/45 md:flex-row md:items-center md:justify-between">
+        <p>© {new Date().getFullYear()} KNOTXANDKRAFTS. All rights reserved.</p>
+
+        <div className="flex gap-5">
+          <span>Privacy</span>
+          <span>Terms</span>
+          <span>Cookies</span>
         </div>
       </div>
     </footer>
