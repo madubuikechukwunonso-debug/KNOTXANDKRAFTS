@@ -1,12 +1,12 @@
 import {
-  mysqlTable,
+  bigint,
+  int,
   mysqlEnum,
+  mysqlTable,
   serial,
-  varchar,
   text,
   timestamp,
-  int,
-  bigint,
+  varchar,
 } from "drizzle-orm/mysql-core";
 
 export const staffRoleEnum = mysqlEnum("staff_role", [
@@ -74,9 +74,13 @@ export const products = mysqlTable("products", {
   slug: varchar("slug", { length: 255 }).notNull().unique(),
   description: text("description"),
   price: int("price").notNull(),
-  priceCurrency: varchar("price_currency", { length: 10 }).notNull().default("cad"),
+  priceCurrency: varchar("price_currency", { length: 10 })
+    .notNull()
+    .default("cad"),
   image: varchar("image", { length: 500 }),
-  category: varchar("category", { length: 100 }).notNull().default("general"),
+  category: varchar("category", { length: 100 })
+    .notNull()
+    .default("general"),
   inventory: int("inventory").notNull().default(0),
   featured: int("featured").notNull().default(0),
   active: int("active").notNull().default(1),
@@ -99,7 +103,9 @@ export const services = mysqlTable("services", {
   slug: varchar("slug", { length: 255 }).notNull().unique(),
   description: text("description"),
   price: int("price").notNull(),
-  priceCurrency: varchar("price_currency", { length: 10 }).notNull().default("cad"),
+  priceCurrency: varchar("price_currency", { length: 10 })
+    .notNull()
+    .default("cad"),
   durationMinutes: int("duration_minutes").notNull(),
   image: varchar("image", { length: 500 }),
   featured: int("featured").notNull().default(0),
@@ -124,7 +130,9 @@ export const galleryItems = mysqlTable("gallery_items", {
   thumbnailUrl: varchar("thumbnail_url", { length: 500 }),
   title: varchar("title", { length: 255 }),
   caption: text("caption"),
-  category: varchar("category", { length: 100 }).notNull().default("general"),
+  category: varchar("category", { length: 100 })
+    .notNull()
+    .default("general"),
   isFeatured: int("is_featured").notNull().default(0),
   isActive: int("is_active").notNull().default(1),
   sortOrder: int("sort_order").notNull().default(0),
@@ -188,7 +196,8 @@ export const serviceStaffAssignments = mysqlTable("service_staff_assignments", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export type ServiceStaffAssignment = typeof serviceStaffAssignments.$inferSelect;
+export type ServiceStaffAssignment =
+  typeof serviceStaffAssignments.$inferSelect;
 
 export const orders = mysqlTable("orders", {
   id: serial("id").primaryKey(),
@@ -253,8 +262,12 @@ export const bookings = mysqlTable("bookings", {
   serviceType: varchar("service_type", { length: 100 }).notNull(),
   durationMinutes: int("duration_minutes").notNull().default(60),
   price: int("price").notNull().default(0),
-  paymentStatus: varchar("payment_status", { length: 50 }).notNull().default("unpaid"),
-  stripeCheckoutSessionId: varchar("stripe_checkout_session_id", { length: 255 }),
+  paymentStatus: varchar("payment_status", { length: 50 })
+    .notNull()
+    .default("unpaid"),
+  stripeCheckoutSessionId: varchar("stripe_checkout_session_id", {
+    length: 255,
+  }),
   date: varchar("date", { length: 20 }).notNull(),
   time: varchar("time", { length: 10 }).notNull(),
   status: varchar("status", { length: 50 }).notNull().default("pending"),
@@ -283,7 +296,9 @@ export const subscribers = mysqlTable("subscribers", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 255 }),
   email: varchar("email", { length: 320 }).notNull().unique(),
-  source: varchar("source", { length: 100 }).notNull().default("newsletter"),
+  source: varchar("source", { length: 100 })
+    .notNull()
+    .default("newsletter"),
   isActive: int("is_active").notNull().default(1),
   unsubscribedAt: timestamp("unsubscribed_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
