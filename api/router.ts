@@ -1,5 +1,6 @@
 import { authRouter } from "./auth-router";
 import { localAuthRouter } from "./local-auth-router";
+import { adminProductsRouter } from "./admin-products-router";
 import { productRouter } from "./product-router";
 import { orderRouter } from "./order-router";
 import { bookingRouter } from "./booking-router";
