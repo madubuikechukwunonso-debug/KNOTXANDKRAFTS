@@ -7,21 +7,10 @@ import path from "path";
 type App = Hono<{ Bindings: HttpBindings }>;
 
 export function serveStaticFiles(app: App) {
-  const staticRoot = path.resolve(import.meta.dirname, "public");
+  const staticRoot = path.resolve(process.cwd(), "dist");
 
-  app.use(
-    "/assets/*",
-    serveStatic({
-      root: staticRoot,
-    }),
-  );
-
-  app.use(
-    "/*",
-    serveStatic({
-      root: staticRoot,
-    }),
-  );
+  app.use("/assets/*", serveStatic({ root: staticRoot }));
+  app.use("/*", serveStatic({ root: staticRoot }));
 
   app.notFound((c) => {
     const accept = c.req.header("accept") ?? "";
@@ -32,6 +21,7 @@ export function serveStaticFiles(app: App) {
 
     const indexPath = path.resolve(staticRoot, "index.html");
     const html = fs.readFileSync(indexPath, "utf-8");
+
     return c.html(html);
   });
 }
