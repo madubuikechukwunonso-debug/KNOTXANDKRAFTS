@@ -107,7 +107,7 @@ export default function Login() {
                   Quick Access
                 </p>
                 <p className="mt-3 text-sm leading-6 text-white/75">
-                  You can continue with Google, or use local sign-in with your
+                  You can continue with Gmail, or use local sign-in with your
                   username or email and password.
                 </p>
               </div>
