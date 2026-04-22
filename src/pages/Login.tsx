@@ -1,23 +1,32 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router";
 import { trpc } from "@/providers/trpc";
 import Navigation from "@/components/Navigation";
 import { LogIn, UserPlus, ArrowLeft } from "lucide-react";
 
-function getOAuthUrl() {
+function buildOAuthUrl() {
   const appID = import.meta.env.VITE_APP_ID;
   const authUrl = import.meta.env.VITE_KIMI_AUTH_URL;
-  const redirectUri = `${window.location.origin}/api/oauth/callback`;
-  const state = btoa(redirectUri);
 
-  const url = new URL(`${authUrl}/api/oauth/authorize`);
-  url.searchParams.set("client_id", appID);
-  url.searchParams.set("redirect_uri", redirectUri);
-  url.searchParams.set("response_type", "code");
-  url.searchParams.set("scope", "profile");
-  url.searchParams.set("state", state);
+  if (!appID || !authUrl) {
+    return null;
+  }
 
-  return url.toString();
+  try {
+    const redirectUri = `${window.location.origin}/api/oauth/callback`;
+    const state = btoa(redirectUri);
+    const url = new URL("/api/oauth/authorize", authUrl);
+
+    url.searchParams.set("client_id", appID);
+    url.searchParams.set("redirect_uri", redirectUri);
+    url.searchParams.set("response_type", "code");
+    url.searchParams.set("scope", "profile");
+    url.searchParams.set("state", state);
+
+    return url.toString();
+  } catch {
+    return null;
+  }
 }
 
 export default function Login() {
@@ -28,6 +37,8 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [error, setError] = useState("");
+
+  const oauthUrl = useMemo(() => buildOAuthUrl(), []);
 
   const loginMutation = trpc.localAuth.login.useMutation({
     onSuccess: (data) => {
@@ -54,11 +65,6 @@ export default function Login() {
         identifier,
         password,
       });
-      return;
-    }
-
-    if (!email) {
-      setError("Email is required");
       return;
     }
 
@@ -98,17 +104,17 @@ export default function Login() {
 
               <p className="mt-5 max-w-md text-sm leading-7 text-white/70 sm:text-base">
                 {mode === "login"
-                  ? "Sign in with your username or email to continue managing your bookings, orders, and account."
-                  : "Register your account to book services, shop products, and stay connected with KNOTXANDKRAFTS."}
+                  ? "Sign in with your username or email to manage your account, bookings, and orders."
+                  : "Create an account to book services, shop products, and stay connected with KNOTXANDKRAFTS."}
               </p>
 
               <div className="mt-10 rounded-3xl border border-white/10 bg-white/5 p-5">
                 <p className="text-[10px] uppercase tracking-[0.28em] text-white/45">
-                  Quick Access
+                  Access Options
                 </p>
                 <p className="mt-3 text-sm leading-6 text-white/75">
-                  You can continue with Gmail, or use local sign-in with your
-                  username or email and password.
+                  Continue with Gmail or use your local account details to sign
+                  in with your username or email and password.
                 </p>
               </div>
             </div>
@@ -126,13 +132,25 @@ export default function Login() {
                   </p>
                 </div>
 
-                <a
-                  href={getOAuthUrl()}
-                  className="inline-flex w-full items-center justify-center gap-3 rounded-2xl border border-black/10 px-5 py-3 text-sm font-medium text-black transition-all duration-300 hover:border-black/25 hover:bg-black hover:text-white"
-                >
-                  <LogIn size={18} />
-                  Continue with Gmail
-                </a>
+                {oauthUrl ? (
+                  <a
+                    href={oauthUrl}
+                    className="inline-flex w-full items-center justify-center gap-3 rounded-2xl border border-black/10 px-5 py-3 text-sm font-medium text-black transition-all duration-300 hover:border-black/25 hover:bg-black hover:text-white"
+                  >
+                    <LogIn size={18} />
+                    Continue with Gmail
+                  </a>
+                ) : (
+                  <button
+                    type="button"
+                    disabled
+                    className="inline-flex w-full cursor-not-allowed items-center justify-center gap-3 rounded-2xl border border-black/10 bg-black/5 px-5 py-3 text-sm font-medium text-black/45"
+                    title="Google sign-in is not configured yet"
+                  >
+                    <LogIn size={18} />
+                    Continue with Gmail
+                  </button>
+                )}
 
                 <div className="my-8 flex items-center gap-4">
                   <div className="h-px flex-1 bg-black/10" />
