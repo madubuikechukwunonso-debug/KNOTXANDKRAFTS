@@ -1,15 +1,19 @@
 import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
 import type { User, LocalUser } from "@db/schema";
 import { authenticateRequest } from "./kimi/auth";
-import { verifyLocalToken } from "./modules/auth/local-utils";
+import { verifyLocalToken } from "./local-auth-utils";
+
+export type UnifiedRole = "user" | "worker" | "admin" | "super_admin";
+export type UnifiedUserType = "oauth" | "local";
 
 export type UnifiedUser = {
   id: number;
   name: string;
   email: string | null;
   avatar?: string | null;
-  role: "user" | "admin";
-  userType: "oauth" | "local";
+  role: UnifiedRole;
+  userType: UnifiedUserType;
+  isBlocked: boolean;
 };
 
 export type TrpcContext = {
@@ -27,36 +31,41 @@ function toUnifiedUser(user?: User, localUser?: LocalUser): UnifiedUser | undefi
       name: user.name || "User",
       email: user.email,
       avatar: user.avatar,
-      role: (user.role as "user" | "admin") || "user",
+      role: (user.role as UnifiedRole) || "user",
       userType: "oauth",
+      isBlocked: Boolean(user.isBlocked),
     };
   }
+
   if (localUser) {
     return {
       id: localUser.id,
       name: localUser.displayName || localUser.username,
       email: localUser.email,
       avatar: null,
-      role: (localUser.role as "user" | "admin") || "user",
+      role: (localUser.role as UnifiedRole) || "user",
       userType: "local",
+      isBlocked: Boolean(localUser.isBlocked) || !Boolean(localUser.isActive),
     };
   }
+
   return undefined;
 }
 
 export async function createContext(
   opts: FetchCreateContextFnOptions,
 ): Promise<TrpcContext> {
-  const ctx: TrpcContext = { req: opts.req, resHeaders: opts.resHeaders };
+  const ctx: TrpcContext = {
+    req: opts.req,
+    resHeaders: opts.resHeaders,
+  };
 
-  // Try OAuth first
   try {
     ctx.user = await authenticateRequest(opts.req.headers);
   } catch {
     // OAuth auth is optional
   }
 
-  // Try local auth token
   if (!ctx.user) {
     try {
       const token = opts.req.headers.get("x-local-auth-token");

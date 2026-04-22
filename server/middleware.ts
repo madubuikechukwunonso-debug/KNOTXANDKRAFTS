@@ -1,6 +1,7 @@
 import { ErrorMessages } from "@contracts/constants";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
+import type { UnifiedRole } from "./context";
 import type { TrpcContext } from "./context";
 
 const t = initTRPC.context<TrpcContext>().create({
@@ -20,14 +21,35 @@ const requireAuth = t.middleware(async (opts) => {
     });
   }
 
+  if (ctx.unifiedUser.isBlocked) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "This account has been blocked.",
+    });
+  }
+
   return next({ ctx: { ...ctx, unifiedUser: ctx.unifiedUser } });
 });
 
-function requireRole(role: string) {
+function requireAnyRole(roles: UnifiedRole[]) {
   return t.middleware(async (opts) => {
     const { ctx, next } = opts;
 
-    if (!ctx.unifiedUser || ctx.unifiedUser.role !== role) {
+    if (!ctx.unifiedUser) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: ErrorMessages.unauthenticated,
+      });
+    }
+
+    if (ctx.unifiedUser.isBlocked) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "This account has been blocked.",
+      });
+    }
+
+    if (!roles.includes(ctx.unifiedUser.role)) {
       throw new TRPCError({
         code: "FORBIDDEN",
         message: ErrorMessages.insufficientRole,
@@ -39,4 +61,10 @@ function requireRole(role: string) {
 }
 
 export const authedQuery = t.procedure.use(requireAuth);
-export const adminQuery = authedQuery.use(requireRole("admin"));
+export const staffQuery = authedQuery.use(
+  requireAnyRole(["worker", "admin", "super_admin"]),
+);
+export const adminQuery = authedQuery.use(
+  requireAnyRole(["admin", "super_admin"]),
+);
+export const superAdminQuery = authedQuery.use(requireAnyRole(["super_admin"]));

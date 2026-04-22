@@ -1,19 +1,30 @@
-import { authRouter } from "./modules/auth/router";
-import { localAuthRouter } from "./modules/auth/local-router";
-import { productRouter } from "./modules/product/router";
-import { orderRouter } from "./modules/order/router";
-import { bookingRouter } from "./modules/booking/router";
-import { heroImageRouter } from "./modules/hero-image/router";
-import { subscriberRouter } from "./modules/subscriber/router";
-import { userRouter } from "./modules/user/router";
-import { contactRouter } from "./modules/contact/router";
-import { paymentRouter } from "./modules/payment/router";
+import { authRouter } from "./auth-router";
+import { localAuthRouter } from "./local-auth-router";
+import { productRouter } from "./product-router";
+import { orderRouter } from "./order-router";
+import { bookingRouter } from "./booking-router";
+import { heroImageRouter } from "./hero-image-router";
+import { subscriberRouter } from "./subscriber-router";
+import { userRouter } from "./user-router";
+import { contactRouter } from "./contact-router";
+import { paymentRouter } from "./payment-router";
+import { adminServicesRouter } from "./admin-services-router";
+import { adminProductsRouter } from "./admin-products-router";
+import { adminGalleryRouter } from "./admin-gallery-router";
+import { adminOrdersRouter } from "./admin-orders-router";
+import { adminNewsletterRouter } from "./admin-newsletter-router";
+import { adminUsersRouter } from "./admin-users-router";
+import { adminStaffRouter } from "./admin-staff-router";
+import { adminMessagesRouter } from "./admin-messages-router";
+import { adminBookingRouter } from "./admin-booking-router";
 import { createRouter, publicQuery } from "./middleware";
 
 export const appRouter = createRouter({
   ping: publicQuery.query(() => ({ ok: true, ts: Date.now() })),
+
   auth: authRouter,
   localAuth: localAuthRouter,
+
   product: productRouter,
   order: orderRouter,
   booking: bookingRouter,
@@ -22,6 +33,16 @@ export const appRouter = createRouter({
   user: userRouter,
   contact: contactRouter,
   payment: paymentRouter,
+
+  adminServices: adminServicesRouter,
+  adminProducts: adminProductsRouter,
+  adminGallery: adminGalleryRouter,
+  adminOrders: adminOrdersRouter,
+  adminNewsletter: adminNewsletterRouter,
+  adminUsers: adminUsersRouter,
+  adminStaff: adminStaffRouter,
+  adminMessages: adminMessagesRouter,
+  adminBooking: adminBookingRouter,
 });
 
 export type AppRouter = typeof appRouter;
