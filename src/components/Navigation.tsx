@@ -7,6 +7,7 @@ import { ShoppingBag, Menu, X, User } from "lucide-react";
 export default function Navigation() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+
   const { user, isAdmin, logout } = useAuth();
   const { totalItems } = useCart();
   const location = useLocation();
@@ -17,6 +18,7 @@ export default function Navigation() {
     const handleScroll = () => {
       setScrolled(window.scrollY > 80);
     };
+
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -25,96 +27,136 @@ export default function Navigation() {
     setMobileOpen(false);
   }, [location.pathname]);
 
-  const bgClass = scrolled || !isHome
-    ? "bg-white/90 backdrop-blur-md border-b border-black/5"
-    : "bg-transparent";
+  const bgClass =
+    scrolled || !isHome
+      ? "bg-white/90 backdrop-blur-md border-b border-black/5"
+      : "bg-transparent";
 
   return (
     <>
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${bgClass}`}>
-        <div className="w-full px-6 lg:px-12">
-          <div className="flex items-center justify-between h-16 lg:h-20">
-            {/* Left - Links */}
-            <div className="hidden lg:flex items-center gap-8">
-              <Link to="/shop" className="nav-link text-black">Shop</Link>
-              <Link to="/booking" className="nav-link text-black">Book</Link>
-            </div>
+      <header
+        className={`fixed left-0 right-0 top-0 z-50 transition-all duration-300 ${bgClass}`}
+      >
+        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 md:px-10 lg:px-16">
+          {/* Left - Links */}
+          <nav className="hidden items-center gap-8 md:flex">
+            <Link to="/shop" className="nav-link">
+              Shop
+            </Link>
+            <Link to="/booking" className="nav-link">
+              Book
+            </Link>
+            <Link to="/gallery" className="nav-link">
+              Gallery
+            </Link>
+          </nav>
 
-            {/* Mobile menu button */}
-            <button
-              className="lg:hidden p-2 -ml-2"
-              onClick={() => setMobileOpen(!mobileOpen)}
-            >
-              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
+          {/* Mobile menu button */}
+          <button
+            type="button"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="flex h-10 w-10 items-center justify-center md:hidden"
+            aria-label="Toggle menu"
+          >
+            {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
 
-            {/* Center - Logo */}
-            <Link
-              to="/"
-              className="absolute left-1/2 -translate-x-1/2 font-serif text-lg lg:text-xl tracking-[0.2em] font-medium text-black"
-            >
-              KNOTXANDKRAFTS
+          {/* Center - Logo */}
+          <Link
+            to="/"
+            className="absolute left-1/2 -translate-x-1/2 font-serif text-lg tracking-[0.25em] text-black md:text-xl"
+          >
+            KNOTXANDKRAFTS
+          </Link>
+
+          {/* Right - Links */}
+          <div className="hidden items-center gap-6 md:flex">
+            {isAdmin && (
+              <Link to="/admin" className="nav-link">
+                Admin
+              </Link>
+            )}
+
+            {user ? (
+              <>
+                <Link to="/account" className="nav-link">
+                  {user.name}
+                </Link>
+                <button type="button" onClick={logout} className="nav-link">
+                  Logout
+                </button>
+              </>
+            ) : (
+              <Link to="/account" className="nav-link">
+                Account
+              </Link>
+            )}
+
+            <Link to="/cart" className="relative nav-link flex items-center gap-2">
+              <ShoppingBag size={16} />
+              <span>({totalItems})</span>
+            </Link>
+          </div>
+
+          {/* Mobile right */}
+          <div className="flex items-center gap-3 md:hidden">
+            <Link to="/account" aria-label="Account">
+              <User size={18} />
             </Link>
 
-            {/* Right - Links */}
-            <div className="hidden lg:flex items-center gap-8">
-              {isAdmin && (
-                <Link to="/admin" className="nav-link text-black">Admin</Link>
+            <Link to="/cart" className="relative" aria-label="Cart">
+              <ShoppingBag size={18} />
+              {totalItems > 0 && (
+                <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-black px-1 text-[10px] text-white">
+                  {totalItems}
+                </span>
               )}
+            </Link>
+          </div>
+        </div>
+
+        {/* Mobile Menu */}
+        {mobileOpen && (
+          <div className="border-t border-black/5 bg-white px-6 py-6 md:hidden">
+            <nav className="flex flex-col gap-5">
+              <Link to="/shop" className="nav-link">
+                Shop
+              </Link>
+              <Link to="/booking" className="nav-link">
+                Book
+              </Link>
+              <Link to="/gallery" className="nav-link">
+                Gallery
+              </Link>
+
+              {isAdmin && (
+                <Link to="/admin" className="nav-link">
+                  Admin
+                </Link>
+              )}
+
               {user ? (
                 <>
-                  <Link to="/account" className="nav-link text-black flex items-center gap-2">
-                    <User className="w-4 h-4" />
-                    {user.name}
+                  <Link to="/account" className="nav-link">
+                    My Account
                   </Link>
-                  <button onClick={logout} className="nav-link text-black">
+                  <button
+                    type="button"
+                    onClick={logout}
+                    className="text-left nav-link"
+                  >
                     Logout
                   </button>
                 </>
               ) : (
-                <Link to="/login" className="nav-link text-black">Account</Link>
+                <Link to="/account" className="nav-link">
+                  Account
+                </Link>
               )}
-              <Link to="/cart" className="nav-link text-black flex items-center gap-2">
-                <ShoppingBag className="w-4 h-4" />
-                ({totalItems})
-              </Link>
-            </div>
-
-            {/* Mobile right */}
-            <div className="flex lg:hidden items-center gap-4">
-              <Link to="/cart" className="relative">
-                <ShoppingBag className="w-5 h-5" />
-                {totalItems > 0 && (
-                  <span className="absolute -top-1 -right-2 w-4 h-4 bg-black text-white text-[10px] flex items-center justify-center rounded-full">
-                    {totalItems}
-                  </span>
-                )}
-              </Link>
-            </div>
+            </nav>
           </div>
-        </div>
-      </nav>
-
-      {/* Mobile Menu */}
-      {mobileOpen && (
-        <div className="fixed inset-0 z-40 bg-white pt-20 px-6 lg:hidden">
-          <div className="flex flex-col gap-6 pt-8">
-            <Link to="/shop" className="text-2xl font-serif">Shop</Link>
-            <Link to="/booking" className="text-2xl font-serif">Book</Link>
-            {isAdmin && (
-              <Link to="/admin" className="text-2xl font-serif">Admin</Link>
-            )}
-            {user ? (
-              <>
-                <Link to="/account" className="text-2xl font-serif">My Account</Link>
-                <button onClick={logout} className="text-2xl font-serif text-left">Logout</button>
-              </>
-            ) : (
-              <Link to="/login" className="text-2xl font-serif">Account</Link>
-            )}
-          </div>
-        </div>
-      )}
+        )}
+      </header>
     </>
   );
 }
