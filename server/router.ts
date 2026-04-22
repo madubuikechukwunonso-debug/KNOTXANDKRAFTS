@@ -8,15 +8,6 @@ import { subscriberRouter } from "./modules/subscriber/router";
 import { userRouter } from "./modules/user/router";
 import { contactRouter } from "./modules/contact/router";
 import { paymentRouter } from "./modules/payment/router";
-import { adminServicesRouter } from "./modules/admin-services/router";
-import { adminProductsRouter } from "./modules/admin-products/router";
-import { adminGalleryRouter } from "./modules/admin-gallery/router";
-import { adminOrdersRouter } from "./modules/admin-orders/router";
-import { adminNewsletterRouter } from "./modules/admin-newsletter/router";
-import { adminUsersRouter } from "./modules/admin-users/router";
-import { adminStaffRouter } from "./modules/admin-staff/router";
-import { adminMessagesRouter } from "./modules/admin-messages/router";
-import { adminBookingRouter } from "./modules/admin-booking/router";
 import { createRouter, publicQuery } from "./middleware";
 
 export const appRouter = createRouter({
@@ -33,16 +24,6 @@ export const appRouter = createRouter({
   user: userRouter,
   contact: contactRouter,
   payment: paymentRouter,
-
-  adminServices: adminServicesRouter,
-  adminProducts: adminProductsRouter,
-  adminGallery: adminGalleryRouter,
-  adminOrders: adminOrdersRouter,
-  adminNewsletter: adminNewsletterRouter,
-  adminUsers: adminUsersRouter,
-  adminStaff: adminStaffRouter,
-  adminMessages: adminMessagesRouter,
-  adminBooking: adminBookingRouter,
 });
 
 export type AppRouter = typeof appRouter;
