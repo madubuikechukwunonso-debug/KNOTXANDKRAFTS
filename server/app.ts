@@ -2,11 +2,10 @@ import { Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
 import type { HttpBindings } from "@hono/node-server";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
-import { appRouter } from "./router";
-import { createContext } from "./context";
-import { env } from "./lib/env";
-import { bootstrapInitialAdmin } from "./admin-bootstrap";
-import { sessionRoutes } from "./session-routes";
+import { appRouter } from "./router.js";
+import { createContext } from "./context.js";
+import { env } from "./lib/env.js";
+import { bootstrapInitialAdmin } from "./admin-bootstrap.js";
 
 try {
   await bootstrapInitialAdmin();
@@ -22,8 +21,6 @@ app.use(
     maxSize: 50 * 1024 * 1024,
   }),
 );
-
-app.route("/api/session", sessionRoutes);
 
 app.use("/api/trpc/*", async (c) => {
   return fetchRequestHandler({
@@ -60,7 +57,7 @@ app.all("/api/*", (c) => {
 });
 
 if (env.isProduction && !process.env.VERCEL) {
-  const { serveStaticFiles } = await import("./lib/vite");
+  const { serveStaticFiles } = await import("./lib/vite.js");
   serveStaticFiles(app);
 
   const { serve } = await import("@hono/node-server");
