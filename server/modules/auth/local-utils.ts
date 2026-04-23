@@ -1,7 +1,7 @@
 import * as jose from "jose";
 import { eq } from "drizzle-orm";
-import { env } from "../../lib/env.js";
-import { getDb } from "../../queries/connection.js";
+import { env } from "../../lib/env";
+import { getDb } from "../../queries/connection";
 import { localUsers } from "@db/schema";
 import type { LocalUser } from "@db/schema";
 
