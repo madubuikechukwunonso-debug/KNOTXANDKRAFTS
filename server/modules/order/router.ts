@@ -5,8 +5,8 @@ import {
   publicQuery,
   authedQuery,
   adminQuery,
-} from "../../middleware.js";
-import { getDb } from "../../queries/connection.js";
+} from "../../middleware";
+import { getDb } from "../../queries/connection";
 import { orders, orderItems, products } from "@db/schema";
 
 export const orderRouter = createRouter({
