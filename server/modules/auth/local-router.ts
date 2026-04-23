@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 import { createRouter, publicQuery } from "../../middleware";
 import { getDb } from "../../queries/connection";
 import { localUsers } from "@db/schema";
-import { signLocalToken, verifyLocalToken } from "./local-utils";
+import { signLocalToken } from "./local-utils";
 
 export const localAuthRouter = createRouter({
   register: publicQuery
@@ -19,35 +19,29 @@ export const localAuthRouter = createRouter({
     )
     .mutation(async ({ input }) => {
       const db = getDb();
-
       const existingUsername = await db
         .select()
         .from(localUsers)
         .where(eq(localUsers.username, input.username))
         .limit(1);
-
       if (existingUsername.length > 0) {
         throw new TRPCError({
           code: "CONFLICT",
           message: "Username already taken",
         });
       }
-
       const existingEmail = await db
         .select()
         .from(localUsers)
         .where(eq(localUsers.email, input.email))
         .limit(1);
-
       if (existingEmail.length > 0) {
         throw new TRPCError({
           code: "CONFLICT",
           message: "Email already registered",
         });
       }
-
       const passwordHash = await bcrypt.hash(input.password, 10);
-
       const result = await db.insert(localUsers).values({
         username: input.username,
         email: input.email,
@@ -57,10 +51,8 @@ export const localAuthRouter = createRouter({
         isActive: 1,
         isBlocked: 0,
       });
-
       const userId = Number(result[0].insertId);
       const token = await signLocalToken(userId);
-
       return {
         token,
         user: {
@@ -82,7 +74,6 @@ export const localAuthRouter = createRouter({
     )
     .mutation(async ({ input }) => {
       const db = getDb();
-
       const users = await db
         .select()
         .from(localUsers)
@@ -93,33 +84,27 @@ export const localAuthRouter = createRouter({
           ),
         )
         .limit(1);
-
       if (users.length === 0) {
         throw new TRPCError({
           code: "UNAUTHORIZED",
           message: "Invalid credentials",
         });
       }
-
       const user = users[0];
       const valid = await bcrypt.compare(input.password, user.passwordHash);
-
       if (!valid) {
         throw new TRPCError({
           code: "UNAUTHORIZED",
           message: "Invalid credentials",
         });
       }
-
       if (user.isBlocked || !user.isActive) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "This account is unavailable",
         });
       }
-
       const token = await signLocalToken(user.id);
-
       return {
         token,
         user: {
@@ -132,22 +117,16 @@ export const localAuthRouter = createRouter({
       };
     }),
 
-  me: publicQuery.query(async ({ ctx }) => {
-    const token =
-      ctx.req.headers.get("x-local-auth-token") ||
-      ctx.req.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
-
-    if (!token) return null;
-
-    const user = await verifyLocalToken(token);
-    if (!user) return null;
+  // ✅ UPDATED: Now uses the already-verified user from createContext (much faster, no duplicate JWT verification or DB query)
+  me: publicQuery.query(({ ctx }) => {
+    if (!ctx.localUser) return null;
 
     return {
-      id: user.id,
-      username: user.username,
-      email: user.email,
-      name: user.displayName || user.username,
-      role: user.role,
+      id: ctx.localUser.id,
+      username: ctx.localUser.username,
+      email: ctx.localUser.email,
+      name: ctx.localUser.displayName || ctx.localUser.username,
+      role: ctx.localUser.role,
     };
   }),
 
