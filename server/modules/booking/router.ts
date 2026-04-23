@@ -1,4 +1,4 @@
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import {
   bookings,
@@ -12,8 +12,8 @@ import {
   authedQuery,
   createRouter,
   publicQuery,
-} from "../../middleware";
-import { getDb } from "../../queries/connection";
+} from "../../middleware.js";
+import { getDb } from "../../queries/connection.js";
 
 function dayOfWeekFromDate(dateStr: string) {
   const date = new Date(`${dateStr}T12:00:00`);
@@ -42,7 +42,11 @@ function buildSlots(
   const end = timeToMinutes(endTime);
   const slots: string[] = [];
 
-  for (let current = start; current + stepMinutes <= end; current += stepMinutes) {
+  for (
+    let current = start;
+    current + stepMinutes <= end;
+    current += stepMinutes
+  ) {
     slots.push(minutesToTime(current));
   }
 
@@ -228,7 +232,7 @@ export const bookingRouter = createRouter({
 
   list: adminQuery.query(async () => {
     const db = getDb();
-    return db.select().from(bookings).orderBy(bookings.createdAt);
+    return db.select().from(bookings).orderBy(desc(bookings.createdAt));
   }),
 
   myBookings: authedQuery.query(async ({ ctx }) => {
@@ -240,7 +244,7 @@ export const bookingRouter = createRouter({
         .select()
         .from(bookings)
         .where(eq(bookings.customerEmail, user.email || ""))
-        .orderBy(bookings.createdAt);
+        .orderBy(desc(bookings.createdAt));
     }
 
     return db
@@ -252,7 +256,7 @@ export const bookingRouter = createRouter({
           eq(bookings.userType, user.userType),
         ),
       )
-      .orderBy(bookings.createdAt);
+      .orderBy(desc(bookings.createdAt));
   }),
 
   updateStatus: adminQuery
