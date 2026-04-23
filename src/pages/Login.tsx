@@ -3,6 +3,15 @@ import { Link } from "react-router";
 import Navigation from "@/components/Navigation";
 import { LogIn, UserPlus, ArrowLeft } from "lucide-react";
 
+async function safeJson(response: Response) {
+  const text = await response.text();
+  try {
+    return text ? JSON.parse(text) : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function Login() {
   const [mode, setMode] = useState<"login" | "register">("login");
   const [identifier, setIdentifier] = useState("");
@@ -45,10 +54,13 @@ export default function Login() {
           body: JSON.stringify(payload),
         });
 
-        const data = await response.json();
+        const data = await safeJson(response);
 
         if (!response.ok || !data?.ok) {
-          setError(data?.message || "Login failed");
+          setError(
+            data?.message ||
+              `Login failed (${response.status})`,
+          );
           return;
         }
 
@@ -83,10 +95,13 @@ export default function Login() {
         body: JSON.stringify(payload),
       });
 
-      const data = await response.json();
+      const data = await safeJson(response);
 
       if (!response.ok || !data?.ok) {
-        setError(data?.message || "Registration failed");
+        setError(
+          data?.message ||
+            `Registration failed (${response.status})`,
+        );
         return;
       }
 
