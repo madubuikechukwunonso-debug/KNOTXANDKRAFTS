@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build && esbuild server/app.ts --platform=node --bundle --format=esm --outdir=server-dist --alias:@=./src --alias:@contracts=./contracts --alias:@db=./db --alias:@server=./server --banner:js=\"import { createRequire } from 'module';const require = createRequire(import.meta.url);\"",
+    "build:vercel": "npm run build",
     "start": "NODE_ENV=production node server-dist/app.js",
+    "start:vercel": "node server-dist/app.js",
     "preview": "vite preview",
     "lint": "eslint .",
     "check": "tsc --noEmit",
@@ -55,7 +57,6 @@
     "@trpc/react-query": "^11.8.1",
     "@trpc/server": "^11.8.1",
     "@types/bcryptjs": "^2.4.6",
-    "@types/three": "^0.184.0",
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
