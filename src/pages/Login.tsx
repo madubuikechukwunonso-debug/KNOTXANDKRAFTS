@@ -18,7 +18,7 @@ export default function Login() {
       localStorage.setItem("local_auth_token", data.token);
       window.location.href = "/";
     },
-    onError: (err) => setError(err.message),
+    onError: (err) => setError(err.message || "Something went wrong"),
   });
 
   const registerMutation = trpc.localAuth.register.useMutation({
@@ -26,18 +26,17 @@ export default function Login() {
       localStorage.setItem("local_auth_token", data.token);
       window.location.href = "/";
     },
-    onError: (err) => setError(err.message),
+    onError: (err) => setError(err.message || "Something went wrong"),
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    // Trim inputs to prevent accidental spaces causing validation or credential errors
-    const trimmedIdentifier = identifier.trim();
     const trimmedPassword = password.trim();
 
     if (mode === "login") {
+      const trimmedIdentifier = identifier.trim();
       if (!trimmedIdentifier || !trimmedPassword) {
         setError("Please enter your username/email and password");
         return;
@@ -50,7 +49,7 @@ export default function Login() {
       return;
     }
 
-    // Register mode
+    // Register
     const trimmedUsername = username.trim();
     const trimmedEmail = email.trim();
     const trimmedDisplayName = displayName.trim();
@@ -190,11 +189,11 @@ export default function Login() {
                     />
                   </div>
 
-                  {error ? (
+                  {error && (
                     <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                       {error}
                     </div>
-                  ) : null}
+                  )}
 
                   <button
                     type="submit"
@@ -202,11 +201,7 @@ export default function Login() {
                     className="inline-flex w-full items-center justify-center gap-3 rounded-2xl bg-black px-5 py-3 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {mode === "login" ? <LogIn size={18} /> : <UserPlus size={18} />}
-                    {isPending
-                      ? "Please wait..."
-                      : mode === "login"
-                        ? "Sign In"
-                        : "Create Account"}
+                    {isPending ? "Please wait..." : mode === "login" ? "Sign In" : "Create Account"}
                   </button>
                 </form>
 
