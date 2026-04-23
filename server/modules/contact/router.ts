@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { eq } from "drizzle-orm";
-import { createRouter, publicQuery, adminQuery } from "../../middleware";
-import { getDb } from "../../queries/connection";
+import { desc, eq } from "drizzle-orm";
+import { createRouter, publicQuery, adminQuery } from "../../middleware.js";
+import { getDb } from "../../queries/connection.js";
 import { contactMessages } from "@db/schema";
 
 export const contactRouter = createRouter({
@@ -16,28 +16,36 @@ export const contactRouter = createRouter({
     )
     .mutation(async ({ input }) => {
       const db = getDb();
+
       await db.insert(contactMessages).values({
         name: input.name,
         email: input.email,
         subject: input.subject,
         message: input.message,
       });
+
       return { success: true };
     }),
 
   list: adminQuery.query(async () => {
     const db = getDb();
-    return db.select().from(contactMessages).orderBy(contactMessages.createdAt);
+
+    return db
+      .select()
+      .from(contactMessages)
+      .orderBy(desc(contactMessages.createdAt));
   }),
 
   markRead: adminQuery
     .input(z.object({ id: z.number() }))
     .mutation(async ({ input }) => {
       const db = getDb();
+
       await db
         .update(contactMessages)
         .set({ read: 1 })
         .where(eq(contactMessages.id, input.id));
+
       return { success: true };
     }),
 });
