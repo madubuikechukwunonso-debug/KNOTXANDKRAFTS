@@ -1,7 +1,8 @@
+// server/admin-bootstrap.ts
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { getDb } from "./queries/connection";
-import { localUsers } from "@db/schema";
+import { localUsers } from "../../db/schema";   // ← CHANGED TO RELATIVE IMPORT
 
 function readBootstrapEnv() {
   return {
