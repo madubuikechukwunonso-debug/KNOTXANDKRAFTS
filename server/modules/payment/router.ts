@@ -2,8 +2,8 @@ import Stripe from "stripe";
 import { and, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { bookings, orderItems, orders, products, services } from "@db/schema";
-import { createRouter, publicQuery } from "../../middleware";
-import { getDb } from "../../queries/connection";
+import { createRouter, publicQuery } from "../../middleware.js";
+import { getDb } from "../../queries/connection.js";
 
 function getStripe() {
   const secretKey = process.env.STRIPE_SECRET_KEY;
