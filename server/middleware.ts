@@ -1,7 +1,7 @@
 import { ErrorMessages } from "@contracts/constants";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
-import type { TrpcContext, UnifiedRole } from "./context";
+import type { TrpcContext, UnifiedRole } from "./context.js";
 
 const t = initTRPC.context<TrpcContext>().create({
   transformer: superjson,
@@ -66,12 +66,15 @@ function requireAnyRole(roles: UnifiedRole[]) {
 }
 
 export const authedQuery = t.procedure.use(requireAuth);
+
 export const staffQuery = authedQuery.use(
   requireAnyRole(["worker", "admin", "super_admin"]),
 );
+
 export const adminQuery = authedQuery.use(
   requireAnyRole(["admin", "super_admin"]),
 );
+
 export const superAdminQuery = authedQuery.use(
   requireAnyRole(["super_admin"]),
 );
