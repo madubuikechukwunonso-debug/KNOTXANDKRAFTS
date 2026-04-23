@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { eq, asc } from "drizzle-orm";
-import { createRouter, publicQuery, adminQuery } from "../../middleware.js";
-import { getDb } from "../../queries/connection.js";
+import { createRouter, publicQuery, adminQuery } from "../../middleware";
+import { getDb } from "../../queries/connection";
 import { heroImages } from "@db/schema";
 
 export const heroImageRouter = createRouter({
