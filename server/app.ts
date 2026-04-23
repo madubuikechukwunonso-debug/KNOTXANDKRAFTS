@@ -25,9 +25,7 @@ app.use("/api/trpc/*", async (c) => {
     router: appRouter,
     createContext,
     onError({ error, type, path, input, ctx, req }) {
-      const isInternalError = error.code === "INTERNAL_SERVER_ERROR";
-
-      const logData = {
+      console.error("tRPC error", {
         timestamp: new Date().toISOString(),
         type,
         path,
@@ -36,20 +34,10 @@ app.use("/api/trpc/*", async (c) => {
         cause: error.cause ? String(error.cause) : undefined,
         userId: ctx?.unifiedUser?.id ?? null,
         userRole: ctx?.unifiedUser?.role ?? null,
-        input: input ? JSON.stringify(input).slice(0, 300) : null,
+        input: input ? JSON.stringify(input).slice(0, 500) : null,
         url: req.url,
-      };
-
-      if (isInternalError) {
-        console.error("🚨 tRPC INTERNAL SERVER ERROR:", logData);
-        console.error("Full Error:", {
-          name: error.name,
-          stack: error.stack,
-          cause: error.cause,
-        });
-      } else {
-        console.warn("⚠️ tRPC Error:", logData);
-      }
+        stack: error.stack,
+      });
     },
   });
 });
@@ -77,7 +65,7 @@ if (env.isProduction && !process.env.VERCEL) {
       port,
     },
     () => {
-      console.log(`🚀 Server running on http://localhost:${port}`);
+      console.log(`Server running on http://localhost:${port}`);
     },
   );
 }
