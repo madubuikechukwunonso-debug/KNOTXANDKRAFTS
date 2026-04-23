@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { desc, eq } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
-import { createRouter, publicQuery, adminQuery } from "../../middleware.js";
-import { getDb } from "../../queries/connection.js";
+import { createRouter, publicQuery, adminQuery } from "../../middleware";
+import { getDb } from "../../queries/connection";
 import { subscribers } from "@db/schema";
 
 export const subscriberRouter = createRouter({
