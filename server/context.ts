@@ -1,7 +1,6 @@
 import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
 import type { LocalUser } from "@db/schema";
 import { verifyLocalToken } from "./modules/auth/local-utils";
-import { TRPCError } from "@trpc/server";
 
 export type UnifiedRole = "user" | "worker" | "admin" | "super_admin";
 
@@ -36,14 +35,9 @@ function toUnifiedUser(localUser?: LocalUser): UnifiedUser | undefined {
   };
 }
 
-/**
- * Enhanced createContext with detailed logging for debugging 500 errors
- */
 export async function createContext(
   opts: FetchCreateContextFnOptions,
 ): Promise<TrpcContext> {
-  const startTime = Date.now();
-
   const ctx: TrpcContext = {
     req: opts.req,
     resHeaders: opts.resHeaders,
@@ -55,27 +49,14 @@ export async function createContext(
       opts.req.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
 
     if (token) {
-      console.log(`🔑 [tRPC Context] Verifying token for request: ${opts.req.url}`);
       ctx.localUser = await verifyLocalToken(token);
-      console.log(`✅ [tRPC Context] Token verified successfully for user: ${ctx.localUser?.id || 'unknown'}`);
-    } else {
-      console.log(`ℹ️ [tRPC Context] No auth token provided for request: ${opts.req.url}`);
     }
-  } catch (error: any) {
-    // Log auth errors clearly but don't break the context (auth is optional)
-    console.warn(`⚠️ [tRPC Context] Token verification failed:`, {
-      message: error.message,
-      name: error.name,
-      stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
-      url: opts.req.url,
-    });
-
-    // Do not throw — local auth is optional as per your original code
+  } catch (error) {
+    console.error("createContext local token verification failed:", error);
+    ctx.localUser = undefined;
   }
 
   ctx.unifiedUser = toUnifiedUser(ctx.localUser);
-
-  console.log(`⏱️ [tRPC Context] Context created in ${Date.now() - startTime}ms for ${opts.req.url}`);
 
   return ctx;
 }
