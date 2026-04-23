@@ -24,6 +24,12 @@ export function TRPCProvider({ children }: TRPCProviderProps) {
             const token = localStorage.getItem("local_auth_token");
             return token ? { "x-local-auth-token": token } : {};
           },
+          fetch(url, options) {
+            return fetch(url, {
+              ...options,
+              credentials: "same-origin",
+            });
+          },
         }),
       ],
     }),
