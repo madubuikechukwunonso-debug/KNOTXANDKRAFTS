@@ -1,4 +1,4 @@
-declare module "../server-dist/app.js" {
+declare module "../server/app.js" {
   const app: {
     fetch: (request: Request) => Promise<Response> | Response;
   };
