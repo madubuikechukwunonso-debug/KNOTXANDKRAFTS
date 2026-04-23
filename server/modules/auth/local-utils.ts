@@ -34,7 +34,8 @@ export async function verifyLocalToken(
       .limit(1);
 
     return user[0] || undefined;
-  } catch {
+  } catch (error) {
+    console.error("verifyLocalToken failed:", error);
     return undefined;
   }
 }
