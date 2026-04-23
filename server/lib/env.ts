@@ -15,7 +15,7 @@ function optional(name: string): string {
 export const env = {
   isProduction: process.env.NODE_ENV === "production",
 
-  // Required
+  // Required for your app
   databaseUrl: required("DATABASE_URL"),
   appSecret: required("APP_SECRET"),
 
