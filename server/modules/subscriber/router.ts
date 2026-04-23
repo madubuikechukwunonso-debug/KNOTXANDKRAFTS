@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
-import { createRouter, publicQuery, adminQuery } from "../../middleware";
-import { getDb } from "../../queries/connection";
+import { createRouter, publicQuery, adminQuery } from "../../middleware.js";
+import { getDb } from "../../queries/connection.js";
 import { subscribers } from "@db/schema";
 
 export const subscriberRouter = createRouter({
@@ -24,20 +24,26 @@ export const subscriberRouter = createRouter({
         });
       }
 
-      await db.insert(subscribers).values({ email: input.email });
+      await db.insert(subscribers).values({
+        email: input.email,
+      });
+
       return { success: true };
     }),
 
   list: adminQuery.query(async () => {
     const db = getDb();
-    return db.select().from(subscribers).orderBy(subscribers.createdAt);
+
+    return db.select().from(subscribers).orderBy(desc(subscribers.createdAt));
   }),
 
   delete: adminQuery
     .input(z.object({ id: z.number() }))
     .mutation(async ({ input }) => {
       const db = getDb();
+
       await db.delete(subscribers).where(eq(subscribers.id, input.id));
+
       return { success: true };
     }),
 });
