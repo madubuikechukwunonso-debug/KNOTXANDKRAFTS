@@ -1,9 +1,9 @@
 import { Hono } from "hono";
 import bcrypt from "bcryptjs";
 import { eq, or } from "drizzle-orm";
-import { getDb } from "./queries/connection";
+import { getDb } from "./queries/connection.js";
 import { localUsers } from "@db/schema";
-import { signLocalToken, verifyLocalToken } from "./modules/auth/local-utils";
+import { signLocalToken, verifyLocalToken } from "./modules/auth/local-utils.js";
 
 type LoginBody = {
   identifier?: string;
@@ -29,7 +29,21 @@ export const sessionRoutes = new Hono();
 
 sessionRoutes.post("/login", async (c) => {
   try {
-    const body = (await c.req.json()) as LoginBody;
+    const raw = await c.req.text();
+    let body: LoginBody = {};
+
+    try {
+      body = raw ? (JSON.parse(raw) as LoginBody) : {};
+    } catch {
+      return c.json(
+        {
+          ok: false,
+          message: "Invalid JSON request body",
+        },
+        400,
+      );
+    }
+
     const identifier = body.identifier?.trim() || "";
     const password = body.password?.trim() || "";
 
@@ -116,7 +130,20 @@ sessionRoutes.post("/login", async (c) => {
 
 sessionRoutes.post("/register", async (c) => {
   try {
-    const body = (await c.req.json()) as RegisterBody;
+    const raw = await c.req.text();
+    let body: RegisterBody = {};
+
+    try {
+      body = raw ? (JSON.parse(raw) as RegisterBody) : {};
+    } catch {
+      return c.json(
+        {
+          ok: false,
+          message: "Invalid JSON request body",
+        },
+        400,
+      );
+    }
 
     const username = body.username?.trim() || "";
     const email = body.email?.trim() || "";
@@ -249,7 +276,5 @@ sessionRoutes.get("/me", async (c) => {
 });
 
 sessionRoutes.post("/logout", async (c) => {
-  return c.json({
-    ok: true,
-  });
+  return c.json({ ok: true });
 });
