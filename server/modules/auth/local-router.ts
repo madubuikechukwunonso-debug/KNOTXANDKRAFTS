@@ -2,10 +2,10 @@ import { z } from "zod";
 import { eq, or } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import bcrypt from "bcryptjs";
-import { createRouter, publicQuery } from "../../middleware";
-import { getDb } from "../../queries/connection";
+import { createRouter, publicQuery } from "../../middleware.js";
+import { getDb } from "../../queries/connection.js";
 import { localUsers } from "@db/schema";
-import { signLocalToken, verifyLocalToken } from "./local-utils";
+import { signLocalToken, verifyLocalToken } from "./local-utils.js";
 
 export const localAuthRouter = createRouter({
   register: publicQuery
