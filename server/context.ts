@@ -1,6 +1,6 @@
 import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
 import type { LocalUser } from "@db/schema";
-import { verifyLocalToken } from "./modules/auth/local-utils";
+import { verifyLocalToken } from "./modules/auth/local-utils.js";
 
 export type UnifiedRole = "user" | "worker" | "admin" | "super_admin";
 
