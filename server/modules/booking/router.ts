@@ -12,8 +12,8 @@ import {
   authedQuery,
   createRouter,
   publicQuery,
-} from "../../middleware.js";
-import { getDb } from "../../queries/connection.js";
+} from "../../middleware";
+import { getDb } from "../../queries/connection";
 
 function dayOfWeekFromDate(dateStr: string) {
   const date = new Date(`${dateStr}T12:00:00`);
