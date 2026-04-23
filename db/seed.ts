@@ -1,7 +1,7 @@
 import { drizzle } from "drizzle-orm/mysql2";
 import { createPool } from "mysql2/promise";
 import * as dotenv from "dotenv";
-import * as schema from "./schema.js";
+import * as schema from "./schema";
 
 dotenv.config({ path: ".env" });
 
