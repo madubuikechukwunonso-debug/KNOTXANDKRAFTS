@@ -22,12 +22,13 @@ export function TRPCProvider({ children }: TRPCProviderProps) {
           url: "/api/trpc",
           headers() {
             const token = localStorage.getItem("local_auth_token");
-
-            return token
-              ? {
-                  "x-local-auth-token": token,
-                }
-              : {};
+            return token ? { "x-local-auth-token": token } : {};
+          },
+          fetch(input, init) {
+            return globalThis.fetch(input, {
+              ...(init ?? {}),
+              credentials: "include",
+            });
           },
         }),
       ],
