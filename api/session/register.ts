@@ -12,28 +12,24 @@ app.post("/register", async (c) => {
     const { username, email, password, displayName } = await c.req.json();
 
     if (!username || !email || !password) {
-      return c.json({ ok: false, message: "Username, email, and password are required" }, 400);
+      return c.json({ ok: false, message: "Username, email and password are required" }, 400);
     }
 
     const db = getDb();
 
-    // Check if user already exists
-    const existingUser = await db.query.localUsers.findFirst({
-      where: (user, { eq, or }) =>
-        or(eq(user.email, email), eq(user.username, username)),
+    // Check for existing user
+    const existing = await db.query.localUsers.findFirst({
+      where: (u, { eq, or }) => or(eq(u.email, email), eq(u.username, username)),
     });
 
-    if (existingUser) {
-      return c.json(
-        { ok: false, message: "User with this email or username already exists" },
-        409
-      );
+    if (existing) {
+      return c.json({ ok: false, message: "User with this email or username already exists" }, 409);
     }
 
     // Hash password
     const passwordHash = await bcrypt.hash(password, 12);
 
-    // Create new user
+    // Create user
     const [newUser] = await db
       .insert(db.schema.localUsers)
       .values({
@@ -46,11 +42,7 @@ app.post("/register", async (c) => {
       })
       .returning();
 
-    if (!newUser) {
-      throw new Error("Failed to create user");
-    }
-
-    // Generate JWT token
+    // Generate JWT
     const secret = new TextEncoder().encode(env.appSecret);
     const token = await new SignJWT({
       id: newUser.id,
@@ -74,15 +66,9 @@ app.post("/register", async (c) => {
         role: newUser.role,
       },
     });
-  } catch (error: any) {
-    console.error("Register error:", error);
-    return c.json(
-      {
-        ok: false,
-        message: error.message || "Registration failed. Please try again.",
-      },
-      500
-    );
+  } catch (err: any) {
+    console.error("Register error:", err);
+    return c.json({ ok: false, message: err.message || "Registration failed" }, 500);
   }
 });
 
