@@ -8,6 +8,7 @@ export function useAuth() {
   } = trpc.localAuth.me.useQuery(undefined, {
     retry: false,
     staleTime: 60_000,
+    refetchOnWindowFocus: false,
   });
 
   const logoutMutation = trpc.localAuth.logout.useMutation({
