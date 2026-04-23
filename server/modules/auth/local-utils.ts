@@ -5,7 +5,7 @@ import { getDb } from "../../queries/connection";
 import { localUsers } from "@db/schema";
 import type { LocalUser } from "@db/schema";
 
-const JWT_SECRET = new TextEncoder().encode(env.appSecret || "local-auth-secret-key-min-32-chars-long!");
+const JWT_SECRET = new TextEncoder().encode(env.appSecret);
 
 export async function signLocalToken(userId: number): Promise<string> {
   return new jose.SignJWT({ userId, type: "local" })
@@ -15,14 +15,24 @@ export async function signLocalToken(userId: number): Promise<string> {
     .sign(JWT_SECRET);
 }
 
-export async function verifyLocalToken(token: string): Promise<LocalUser | undefined> {
+export async function verifyLocalToken(
+  token: string,
+): Promise<LocalUser | undefined> {
   try {
-    const { payload } = await jose.jwtVerify(token, JWT_SECRET, { clockTolerance: 60 });
+    const { payload } = await jose.jwtVerify(token, JWT_SECRET, {
+      clockTolerance: 60,
+    });
+
     const userId = payload.userId as number;
     if (!userId) return undefined;
 
     const db = getDb();
-    const user = await db.select().from(localUsers).where(eq(localUsers.id, userId)).limit(1);
+    const user = await db
+      .select()
+      .from(localUsers)
+      .where(eq(localUsers.id, userId))
+      .limit(1);
+
     return user[0] || undefined;
   } catch {
     return undefined;
