@@ -1,3 +1,4 @@
+// db/seed.ts
 import { drizzle } from "drizzle-orm/mysql2";
 import { createPool } from "mysql2/promise";
 import * as dotenv from "dotenv";
@@ -6,7 +7,9 @@ import * as schema from "./schema";
 dotenv.config({ path: ".env" });
 
 const pool = createPool(process.env.DATABASE_URL || "");
-const db = drizzle(pool, { schema, mode: "planetscale" });
+
+// FIXED: Use mode: "default" because you are using mysql2 driver
+const db = drizzle(pool, { schema, mode: "default" });
 
 async function seed() {
   console.log("Seeding products...");
