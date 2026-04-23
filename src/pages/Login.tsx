@@ -13,58 +13,67 @@ export default function Login() {
   const [displayName, setDisplayName] = useState("");
   const [error, setError] = useState("");
 
-  const loginMutation = trpc.localAuth.login.useMutation({
-    onSuccess: (data) => {
-      localStorage.setItem("local_auth_token", data.token);
-      window.location.href = "/";
-    },
-    onError: (err) => setError(err.message || "Something went wrong"),
-  });
+  const loginMutation = trpc.localAuth.login.useMutation();
+  const registerMutation = trpc.localAuth.register.useMutation();
 
-  const registerMutation = trpc.localAuth.register.useMutation({
-    onSuccess: (data) => {
-      localStorage.setItem("local_auth_token", data.token);
-      window.location.href = "/";
-    },
-    onError: (err) => setError(err.message || "Something went wrong"),
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
     const trimmedPassword = password.trim();
 
-    if (mode === "login") {
-      const trimmedIdentifier = identifier.trim();
-      if (!trimmedIdentifier || !trimmedPassword) {
-        setError("Please enter your username/email and password");
+    try {
+      if (mode === "login") {
+        const trimmedIdentifier = identifier.trim();
+
+        if (!trimmedIdentifier || !trimmedPassword) {
+          setError("Please enter your username/email and password");
+          return;
+        }
+
+        const payload = {
+          identifier: trimmedIdentifier,
+          password: trimmedPassword,
+        };
+
+        console.log("LOGIN PAYLOAD", payload);
+
+        const data = await loginMutation.mutateAsync(payload);
+
+        localStorage.setItem("local_auth_token", data.token);
+        window.location.href = "/";
         return;
       }
 
-      loginMutation.mutate({
-        identifier: trimmedIdentifier,
+      const trimmedUsername = username.trim();
+      const trimmedEmail = email.trim();
+      const trimmedDisplayName = displayName.trim();
+
+      if (!trimmedUsername || !trimmedEmail || !trimmedPassword) {
+        setError("Please fill in all required fields");
+        return;
+      }
+
+      const payload = {
+        username: trimmedUsername,
+        email: trimmedEmail,
         password: trimmedPassword,
-      });
-      return;
+        displayName: trimmedDisplayName || undefined,
+      };
+
+      console.log("REGISTER PAYLOAD", payload);
+
+      const data = await registerMutation.mutateAsync(payload);
+
+      localStorage.setItem("local_auth_token", data.token);
+      window.location.href = "/";
+    } catch (err: any) {
+      setError(
+        err?.message ||
+          err?.shape?.message ||
+          "Something went wrong. Please try again.",
+      );
     }
-
-    // Register
-    const trimmedUsername = username.trim();
-    const trimmedEmail = email.trim();
-    const trimmedDisplayName = displayName.trim();
-
-    if (!trimmedUsername || !trimmedEmail || !trimmedPassword) {
-      setError("Please fill in all required fields");
-      return;
-    }
-
-    registerMutation.mutate({
-      username: trimmedUsername,
-      email: trimmedEmail,
-      password: trimmedPassword,
-      displayName: trimmedDisplayName || undefined,
-    });
   };
 
   const isPending = loginMutation.isPending || registerMutation.isPending;
@@ -72,6 +81,7 @@ export default function Login() {
   return (
     <>
       <Navigation />
+
       <main className="min-h-screen bg-[#f8f5f0] px-6 pb-16 pt-28 text-black md:px-10 lg:px-16">
         <div className="mx-auto max-w-6xl">
           <Link
@@ -87,14 +97,17 @@ export default function Login() {
               <p className="text-[11px] uppercase tracking-[0.35em] text-white/45">
                 KNOTXANDKRAFTS
               </p>
+
               <h1 className="mt-6 font-serif text-4xl leading-tight sm:text-5xl">
                 {mode === "login" ? "Welcome Back" : "Create Your Account"}
               </h1>
+
               <p className="mt-5 max-w-md text-sm leading-7 text-white/70 sm:text-base">
                 {mode === "login"
                   ? "Sign in with your username or email to manage your account, bookings, and orders."
                   : "Create an account to book services, shop products, and stay connected with KNOTXANDKRAFTS."}
               </p>
+
               <div className="mt-10 rounded-3xl border border-white/10 bg-white/5 p-5">
                 <p className="text-[10px] uppercase tracking-[0.28em] text-white/45">
                   Local Access
@@ -131,6 +144,7 @@ export default function Login() {
                         onChange={(e) => setIdentifier(e.target.value)}
                         className="w-full rounded-2xl border border-black/10 px-4 py-3 text-sm outline-none transition-colors focus:border-black"
                         placeholder="Enter your username or email"
+                        autoComplete="username"
                         required
                       />
                     </div>
@@ -145,9 +159,11 @@ export default function Login() {
                           value={username}
                           onChange={(e) => setUsername(e.target.value)}
                           className="w-full rounded-2xl border border-black/10 px-4 py-3 text-sm outline-none transition-colors focus:border-black"
+                          autoComplete="username"
                           required
                         />
                       </div>
+
                       <div>
                         <label className="mb-2 block text-xs uppercase tracking-[0.22em] text-black/55">
                           Email
@@ -157,9 +173,11 @@ export default function Login() {
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           className="w-full rounded-2xl border border-black/10 px-4 py-3 text-sm outline-none transition-colors focus:border-black"
+                          autoComplete="email"
                           required
                         />
                       </div>
+
                       <div>
                         <label className="mb-2 block text-xs uppercase tracking-[0.22em] text-black/55">
                           Display Name
@@ -184,24 +202,33 @@ export default function Login() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="w-full rounded-2xl border border-black/10 px-4 py-3 text-sm outline-none transition-colors focus:border-black"
+                      autoComplete={mode === "login" ? "current-password" : "new-password"}
                       required
                       minLength={6}
                     />
                   </div>
 
-                  {error && (
+                  {error ? (
                     <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                       {error}
                     </div>
-                  )}
+                  ) : null}
 
                   <button
                     type="submit"
                     disabled={isPending}
                     className="inline-flex w-full items-center justify-center gap-3 rounded-2xl bg-black px-5 py-3 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {mode === "login" ? <LogIn size={18} /> : <UserPlus size={18} />}
-                    {isPending ? "Please wait..." : mode === "login" ? "Sign In" : "Create Account"}
+                    {mode === "login" ? (
+                      <LogIn size={18} />
+                    ) : (
+                      <UserPlus size={18} />
+                    )}
+                    {isPending
+                      ? "Please wait..."
+                      : mode === "login"
+                        ? "Sign In"
+                        : "Create Account"}
                   </button>
                 </form>
 
