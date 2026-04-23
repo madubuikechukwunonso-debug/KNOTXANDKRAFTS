@@ -8,21 +8,8 @@ function required(name: string): string {
   return value ?? "";
 }
 
-function optional(name: string): string {
-  return process.env[name] ?? "";
-}
-
 export const env = {
   isProduction: process.env.NODE_ENV === "production",
-
-  // Required for your app
   databaseUrl: required("DATABASE_URL"),
   appSecret: required("APP_SECRET"),
-
-  // Optional OAuth / Kimi config
-  appId: optional("APP_ID"),
-  kimiAuthUrl: optional("KIMI_AUTH_URL"),
-  kimiOpenUrl: optional("KIMI_OPEN_URL"),
-
-  ownerUnionId: process.env.OWNER_UNION_ID ?? "",
 };
