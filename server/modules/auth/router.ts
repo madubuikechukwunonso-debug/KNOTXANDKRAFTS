@@ -1,4 +1,4 @@
-import { createRouter, authedQuery } from "../../middleware.js";
+import { createRouter, authedQuery } from "../../middleware";
 
 export const authRouter = createRouter({
   me: authedQuery.query(({ ctx }) => {
