@@ -33,19 +33,38 @@ export default function Login() {
     e.preventDefault();
     setError("");
 
+    // Trim inputs to prevent accidental spaces causing validation or credential errors
+    const trimmedIdentifier = identifier.trim();
+    const trimmedPassword = password.trim();
+
     if (mode === "login") {
+      if (!trimmedIdentifier || !trimmedPassword) {
+        setError("Please enter your username/email and password");
+        return;
+      }
+
       loginMutation.mutate({
-        identifier,
-        password,
+        identifier: trimmedIdentifier,
+        password: trimmedPassword,
       });
       return;
     }
 
+    // Register mode
+    const trimmedUsername = username.trim();
+    const trimmedEmail = email.trim();
+    const trimmedDisplayName = displayName.trim();
+
+    if (!trimmedUsername || !trimmedEmail || !trimmedPassword) {
+      setError("Please fill in all required fields");
+      return;
+    }
+
     registerMutation.mutate({
-      username,
-      email,
-      password,
-      displayName: displayName || undefined,
+      username: trimmedUsername,
+      email: trimmedEmail,
+      password: trimmedPassword,
+      displayName: trimmedDisplayName || undefined,
     });
   };
 
@@ -54,7 +73,6 @@ export default function Login() {
   return (
     <>
       <Navigation />
-
       <main className="min-h-screen bg-[#f8f5f0] px-6 pb-16 pt-28 text-black md:px-10 lg:px-16">
         <div className="mx-auto max-w-6xl">
           <Link
@@ -70,17 +88,14 @@ export default function Login() {
               <p className="text-[11px] uppercase tracking-[0.35em] text-white/45">
                 KNOTXANDKRAFTS
               </p>
-
               <h1 className="mt-6 font-serif text-4xl leading-tight sm:text-5xl">
                 {mode === "login" ? "Welcome Back" : "Create Your Account"}
               </h1>
-
               <p className="mt-5 max-w-md text-sm leading-7 text-white/70 sm:text-base">
                 {mode === "login"
                   ? "Sign in with your username or email to manage your account, bookings, and orders."
                   : "Create an account to book services, shop products, and stay connected with KNOTXANDKRAFTS."}
               </p>
-
               <div className="mt-10 rounded-3xl border border-white/10 bg-white/5 p-5">
                 <p className="text-[10px] uppercase tracking-[0.28em] text-white/45">
                   Local Access
@@ -134,7 +149,6 @@ export default function Login() {
                           required
                         />
                       </div>
-
                       <div>
                         <label className="mb-2 block text-xs uppercase tracking-[0.22em] text-black/55">
                           Email
@@ -147,7 +161,6 @@ export default function Login() {
                           required
                         />
                       </div>
-
                       <div>
                         <label className="mb-2 block text-xs uppercase tracking-[0.22em] text-black/55">
                           Display Name
