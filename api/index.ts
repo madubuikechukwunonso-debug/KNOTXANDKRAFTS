@@ -1,3 +1,3 @@
-import app from "../server-dist/app.js";   // ← Import the ALREADY BUNDLED version
+import app from "../server/app";
 
 export default app;
