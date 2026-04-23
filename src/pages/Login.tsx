@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import { trpc } from "@/providers/trpc";
 import Navigation from "@/components/Navigation";
 import { LogIn, UserPlus, ArrowLeft } from "lucide-react";
 
@@ -12,9 +11,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [error, setError] = useState("");
-
-  const loginMutation = trpc.localAuth.login.useMutation();
-  const registerMutation = trpc.localAuth.register.useMutation();
+  const [isPending, setIsPending] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,6 +20,8 @@ export default function Login() {
     const trimmedPassword = password.trim();
 
     try {
+      setIsPending(true);
+
       if (mode === "login") {
         const trimmedIdentifier = identifier.trim();
 
@@ -38,7 +37,20 @@ export default function Login() {
 
         console.log("LOGIN PAYLOAD", payload);
 
-        const data = await loginMutation.mutateAsync(payload);
+        const response = await fetch("/api/session/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data?.ok) {
+          setError(data?.message || "Login failed");
+          return;
+        }
 
         localStorage.setItem("local_auth_token", data.token);
         window.location.href = "/";
@@ -63,20 +75,29 @@ export default function Login() {
 
       console.log("REGISTER PAYLOAD", payload);
 
-      const data = await registerMutation.mutateAsync(payload);
+      const response = await fetch("/api/session/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data?.ok) {
+        setError(data?.message || "Registration failed");
+        return;
+      }
 
       localStorage.setItem("local_auth_token", data.token);
       window.location.href = "/";
     } catch (err: any) {
-      setError(
-        err?.message ||
-          err?.shape?.message ||
-          "Something went wrong. Please try again.",
-      );
+      setError(err?.message || "Something went wrong. Please try again.");
+    } finally {
+      setIsPending(false);
     }
   };
-
-  const isPending = loginMutation.isPending || registerMutation.isPending;
 
   return (
     <>
@@ -110,11 +131,11 @@ export default function Login() {
 
               <div className="mt-10 rounded-3xl border border-white/10 bg-white/5 p-5">
                 <p className="text-[10px] uppercase tracking-[0.28em] text-white/45">
-                  Local Access
+                  Direct Session Access
                 </p>
                 <p className="mt-3 text-sm leading-6 text-white/75">
-                  This app now uses local authentication only. Sign in with your
-                  username or email and password.
+                  Authentication now uses direct API session routes instead of
+                  tRPC auth calls.
                 </p>
               </div>
             </div>
@@ -219,11 +240,7 @@ export default function Login() {
                     disabled={isPending}
                     className="inline-flex w-full items-center justify-center gap-3 rounded-2xl bg-black px-5 py-3 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {mode === "login" ? (
-                      <LogIn size={18} />
-                    ) : (
-                      <UserPlus size={18} />
-                    )}
+                    {mode === "login" ? <LogIn size={18} /> : <UserPlus size={18} />}
                     {isPending
                       ? "Please wait..."
                       : mode === "login"
