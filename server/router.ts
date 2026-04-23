@@ -1,5 +1,3 @@
-import { authRouter } from "./modules/auth/router";
-import { localAuthRouter } from "./modules/auth/local-router";
 import { productRouter } from "./modules/product/router";
 import { orderRouter } from "./modules/order/router";
 import { bookingRouter } from "./modules/booking/router";
@@ -17,8 +15,6 @@ export const appRouter = createRouter({
     env: process.env.NODE_ENV,
   })),
 
-  auth: authRouter,
-  localAuth: localAuthRouter,
   product: productRouter,
   order: orderRouter,
   booking: bookingRouter,
