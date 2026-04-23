@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
-import { getDb } from "./queries/connection.js";
+import { getDb } from "./queries/connection";
 import { localUsers } from "@db/schema";
 
 function readBootstrapEnv() {
