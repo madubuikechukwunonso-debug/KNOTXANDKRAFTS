@@ -53,6 +53,9 @@ export const localAuthRouter = createRouter({
         email: input.email,
         displayName: input.displayName || input.username,
         passwordHash,
+        role: "user",
+        isActive: 1,
+        isBlocked: 0,
       });
 
       const userId = Number(result[0].insertId);
@@ -65,6 +68,7 @@ export const localAuthRouter = createRouter({
           username: input.username,
           email: input.email,
           name: input.displayName || input.username,
+          role: "user",
         },
       };
     }),
@@ -129,7 +133,10 @@ export const localAuthRouter = createRouter({
     }),
 
   me: publicQuery.query(async ({ ctx }) => {
-    const token = ctx.req.headers.get("x-local-auth-token");
+    const token =
+      ctx.req.headers.get("x-local-auth-token") ||
+      ctx.req.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
+
     if (!token) return null;
 
     const user = await verifyLocalToken(token);
@@ -142,5 +149,9 @@ export const localAuthRouter = createRouter({
       name: user.displayName || user.username,
       role: user.role,
     };
+  }),
+
+  logout: publicQuery.mutation(async () => {
+    return { success: true };
   }),
 });
