@@ -1,8 +1,8 @@
 import { asc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { products } from "@db/schema";
-import { adminQuery, createRouter, publicQuery } from "../../middleware.js";
-import { getDb } from "../../queries/connection.js";
+import { adminQuery, createRouter, publicQuery } from "../../middleware";
+import { getDb } from "../../queries/connection";
 
 function slugify(value: string) {
   return value
