@@ -2,10 +2,10 @@ import { Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
 import type { HttpBindings } from "@hono/node-server";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
-import { appRouter } from "../server/router.js";
-import { createContext } from "../server/context.js";
-import { bootstrapInitialAdmin } from "../server/admin-bootstrap.js";
-import { sessionRoutes } from "../server/session-routes.js";
+import { appRouter } from "../server/router";
+import { createContext } from "../server/context";
+import { bootstrapInitialAdmin } from "../server/admin-bootstrap";
+import { sessionRoutes } from "../server/session-routes";
 
 try {
   await bootstrapInitialAdmin();
