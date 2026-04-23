@@ -27,10 +27,7 @@ export const localAuthRouter = createRouter({
           .where(eq(localUsers.username, input.username))
           .limit(1);
         if (existingUsername.length > 0) {
-          throw new TRPCError({
-            code: "CONFLICT",
-            message: "Username already taken",
-          });
+          throw new TRPCError({ code: "CONFLICT", message: "Username already taken" });
         }
 
         const existingEmail = await db
@@ -39,10 +36,7 @@ export const localAuthRouter = createRouter({
           .where(eq(localUsers.email, input.email))
           .limit(1);
         if (existingEmail.length > 0) {
-          throw new TRPCError({
-            code: "CONFLICT",
-            message: "Email already registered",
-          });
+          throw new TRPCError({ code: "CONFLICT", message: "Email already registered" });
         }
 
         const passwordHash = await bcrypt.hash(input.password, 10);
@@ -72,9 +66,6 @@ export const localAuthRouter = createRouter({
         };
       } catch (error) {
         if (error instanceof TRPCError) throw error;
-
-        // Catch any other runtime error (DB connection, bcrypt, etc.) and turn it into a proper TRPCError
-        // so the client can always parse it with superjson
         console.error("Register error:", error);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -106,27 +97,18 @@ export const localAuthRouter = createRouter({
           .limit(1);
 
         if (users.length === 0) {
-          throw new TRPCError({
-            code: "UNAUTHORIZED",
-            message: "Invalid credentials",
-          });
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid credentials" });
         }
 
         const user = users[0];
         const valid = await bcrypt.compare(input.password, user.passwordHash);
 
         if (!valid) {
-          throw new TRPCError({
-            code: "UNAUTHORIZED",
-            message: "Invalid credentials",
-          });
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid credentials" });
         }
 
         if (user.isBlocked || !user.isActive) {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: "This account is unavailable",
-          });
+          throw new TRPCError({ code: "FORBIDDEN", message: "This account is unavailable" });
         }
 
         const token = await signLocalToken(user.id);
@@ -143,8 +125,6 @@ export const localAuthRouter = createRouter({
         };
       } catch (error) {
         if (error instanceof TRPCError) throw error;
-
-        // Catch any runtime error (most common cause of "Unable to transform response")
         console.error("Login error:", error);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -153,6 +133,7 @@ export const localAuthRouter = createRouter({
       }
     }),
 
+  // ✅ Now uses context (much faster + consistent with authRouter)
   me: publicQuery.query(({ ctx }) => {
     if (!ctx.localUser) return null;
 
