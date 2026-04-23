@@ -11,10 +11,27 @@ import { users as kimiUsers } from "./platform";
 import { findUserByUnionId, upsertUser } from "../queries/users";
 import type { TokenResponse } from "./types";
 
+const kimiEnabled =
+  Boolean(env.appId) &&
+  Boolean(env.kimiAuthUrl) &&
+  Boolean(env.kimiOpenUrl) &&
+  Boolean(env.appSecret);
+
+const jwks =
+  kimiEnabled && env.kimiAuthUrl
+    ? jose.createRemoteJWKSet(
+        new URL("/api/.well-known/jwks.json", env.kimiAuthUrl),
+      )
+    : null;
+
 async function exchangeAuthCode(
   code: string,
   redirectUri: string,
 ): Promise<TokenResponse> {
+  if (!kimiEnabled) {
+    throw new Error("Kimi OAuth is not configured");
+  }
+
   const body = new URLSearchParams({
     grant_type: "authorization_code",
     code,
@@ -25,7 +42,9 @@ async function exchangeAuthCode(
 
   const resp = await fetch(`${env.kimiAuthUrl}/api/oauth/token`, {
     method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
     body: body.toString(),
   });
 
@@ -37,42 +56,52 @@ async function exchangeAuthCode(
   return resp.json() as Promise<TokenResponse>;
 }
 
-const jwks = jose.createRemoteJWKSet(
-  new URL(`${env.kimiAuthUrl}/api/.well-known/jwks.json`),
-);
-
 async function verifyAccessToken(
   accessToken: string,
 ): Promise<{ userId: string; clientId: string }> {
+  if (!jwks) {
+    throw new Error("Kimi OAuth is not configured");
+  }
+
   const { payload } = await jose.jwtVerify(accessToken, jwks);
+
   const userId = payload.user_id as string;
   const clientId = payload.client_id as string;
+
   if (!userId) {
     throw new Error("user_id missing from access token");
   }
+
   return { userId, clientId };
 }
 
 export async function authenticateRequest(headers: Headers) {
   const cookies = cookie.parse(headers.get("cookie") || "");
   const token = cookies[Session.cookieName];
+
   if (!token) {
-    console.warn("[auth] No session cookie found in request.");
     throw Errors.forbidden("Invalid authentication token.");
   }
+
   const claim = await verifySessionToken(token);
   if (!claim) {
     throw Errors.forbidden("Invalid authentication token.");
   }
+
   const user = await findUserByUnionId(claim.unionId);
   if (!user) {
     throw Errors.forbidden("User not found. Please re-login.");
   }
+
   return user;
 }
 
 export function createOAuthCallbackHandler() {
   return async (c: Context) => {
+    if (!kimiEnabled) {
+      return c.redirect("/login", 302);
+    }
+
     const code = c.req.query("code");
     const state = c.req.query("state");
     const error = c.req.query("error");
@@ -82,8 +111,12 @@ export function createOAuthCallbackHandler() {
       if (error === "access_denied") {
         return c.redirect("/", 302);
       }
+
       return c.json(
-        { error, error_description: errorDescription },
+        {
+          error,
+          error_description: errorDescription,
+        },
         400,
       );
     }
@@ -96,6 +129,7 @@ export function createOAuthCallbackHandler() {
       const redirectUri = atob(state);
       const tokenResp = await exchangeAuthCode(code, redirectUri);
       const { userId } = await verifyAccessToken(tokenResp.access_token);
+
       const userProfile = await kimiUsers.getProfile(tokenResp.access_token);
       if (!userProfile) {
         throw new Error("Failed to fetch user profile from Kimi Open");
@@ -110,10 +144,11 @@ export function createOAuthCallbackHandler() {
 
       const token = await signSessionToken({
         unionId: userId,
-        clientId: env.appId,
+        clientId: env.appId || "local-app",
       });
 
       const cookieOpts = getSessionCookieOptions(c.req.raw.headers);
+
       setCookie(c, Session.cookieName, token, {
         ...cookieOpts,
         maxAge: Session.maxAgeMs / 1000,
@@ -122,7 +157,7 @@ export function createOAuthCallbackHandler() {
       return c.redirect("/", 302);
     } catch (error) {
       console.error("[OAuth] Callback failed", error);
-      return c.json({ error: "OAuth callback failed" }, 500);
+      return c.redirect("/login", 302);
     }
   };
 }
