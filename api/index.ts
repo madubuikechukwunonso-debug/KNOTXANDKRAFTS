@@ -1,0 +1,54 @@
+import { Hono } from "hono";
+import { bodyLimit } from "hono/body-limit";
+import type { HttpBindings } from "@hono/node-server";
+import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
+import { appRouter } from "../server/router";
+import { createContext } from "../server/context";
+import { bootstrapInitialAdmin } from "../server/admin-bootstrap";
+
+await bootstrapInitialAdmin();
+
+const app = new Hono<{ Bindings: HttpBindings }>();
+
+app.use(
+  "*",
+  bodyLimit({
+    maxSize: 50 * 1024 * 1024,
+  }),
+);
+
+app.use("/api/trpc/*", async (c) => {
+  return fetchRequestHandler({
+    endpoint: "/api/trpc",
+    req: c.req.raw,
+    router: appRouter,
+    createContext,
+    onError({ error, type, path, input, ctx, req }) {
+      console.error("tRPC error", {
+        timestamp: new Date().toISOString(),
+        type,
+        path,
+        code: error.code,
+        message: error.message,
+        cause: error.cause ? String(error.cause) : undefined,
+        userId: ctx?.unifiedUser?.id ?? null,
+        userRole: ctx?.unifiedUser?.role ?? null,
+        input: input ? JSON.stringify(input).slice(0, 500) : null,
+        url: req.url,
+        stack: error.stack,
+      });
+    },
+  });
+});
+
+app.all("/api/*", (c) => {
+  return c.json(
+    {
+      error: "Not Found",
+      message: "The requested API endpoint does not exist",
+    },
+    404,
+  );
+});
+
+export default app;
