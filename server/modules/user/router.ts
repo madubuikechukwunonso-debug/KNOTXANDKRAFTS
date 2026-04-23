@@ -1,12 +1,13 @@
 import { z } from "zod";
-import { eq } from "drizzle-orm";
-import { createRouter, adminQuery } from "../../middleware";
-import { getDb } from "../../queries/connection";
+import { desc, eq } from "drizzle-orm";
+import { createRouter, adminQuery } from "../../middleware.js";
+import { getDb } from "../../queries/connection.js";
 import { users, localUsers } from "@db/schema";
 
 export const userRouter = createRouter({
   list: adminQuery.query(async () => {
     const db = getDb();
+
     const oauthUsers = await db.select().from(users);
     const local = await db.select().from(localUsers);
 
@@ -31,7 +32,11 @@ export const userRouter = createRouter({
       })),
     ];
 
-    return unified;
+    return unified.sort((a, b) => {
+      const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return bTime - aTime;
+    });
   }),
 
   updateRole: adminQuery
@@ -39,16 +44,24 @@ export const userRouter = createRouter({
       z.object({
         id: z.number(),
         userType: z.enum(["oauth", "local"]),
-        role: z.enum(["user", "admin"]),
+        role: z.enum(["user", "worker", "admin", "super_admin"]),
       }),
     )
     .mutation(async ({ input }) => {
       const db = getDb();
+
       if (input.userType === "oauth") {
-        await db.update(users).set({ role: input.role }).where(eq(users.id, input.id));
+        await db
+          .update(users)
+          .set({ role: input.role })
+          .where(eq(users.id, input.id));
       } else {
-        await db.update(localUsers).set({ role: input.role }).where(eq(localUsers.id, input.id));
+        await db
+          .update(localUsers)
+          .set({ role: input.role })
+          .where(eq(localUsers.id, input.id));
       }
+
       return { success: true };
     }),
 
@@ -61,11 +74,13 @@ export const userRouter = createRouter({
     )
     .mutation(async ({ input }) => {
       const db = getDb();
+
       if (input.userType === "oauth") {
         await db.delete(users).where(eq(users.id, input.id));
       } else {
         await db.delete(localUsers).where(eq(localUsers.id, input.id));
       }
+
       return { success: true };
     }),
 });
