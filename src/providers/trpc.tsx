@@ -1,33 +1,39 @@
-import { createTRPCReact } from "@trpc/react-query";
-import { httpBatchLink } from "@trpc/client";
+import { useState } from "react";
+import type { ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { createTRPCReact, httpBatchLink } from "@trpc/react-query";
 import superjson from "superjson";
 import type { AppRouter } from "../../server/router";
-import type { ReactNode } from "react";
 
 export const trpc = createTRPCReact<AppRouter>();
 
-const queryClient = new QueryClient();
-const trpcClient = trpc.createClient({
-  links: [
-    httpBatchLink({
-      url: "/api/trpc",
-      transformer: superjson,
-      headers() {
-        const token = localStorage.getItem("local_auth_token");
-        return token ? { "x-local-auth-token": token } : {};
-      },
-      fetch(input, init) {
-        return globalThis.fetch(input, {
-          ...(init ?? {}),
-          credentials: "include",
-        });
-      },
-    }),
-  ],
-});
+type TRPCProviderProps = {
+  children: ReactNode;
+};
 
-export function TRPCProvider({ children }: { children: ReactNode }) {
+export function TRPCProvider({ children }: TRPCProviderProps) {
+  const [queryClient] = useState(() => new QueryClient());
+
+  const [trpcClient] = useState(() =>
+    trpc.createClient({
+      transformer: superjson,
+      links: [
+        httpBatchLink({
+          url: "/api/trpc",
+          headers() {
+            const token = localStorage.getItem("local_auth_token");
+
+            return token
+              ? {
+                  "x-local-auth-token": token,
+                }
+              : {};
+          },
+        }),
+      ],
+    }),
+  );
+
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
