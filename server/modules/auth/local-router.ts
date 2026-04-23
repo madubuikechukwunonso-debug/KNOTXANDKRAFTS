@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 import { createRouter, publicQuery } from "../../middleware";
 import { getDb } from "../../queries/connection";
 import { localUsers } from "@db/schema";
-import { signLocalToken } from "./local-utils";
+import { signLocalToken, verifyLocalToken } from "./local-utils";
 
 export const localAuthRouter = createRouter({
   register: publicQuery
@@ -18,60 +18,59 @@ export const localAuthRouter = createRouter({
       }),
     )
     .mutation(async ({ input }) => {
-      try {
-        const db = getDb();
+      const db = getDb();
 
-        const existingUsername = await db
-          .select()
-          .from(localUsers)
-          .where(eq(localUsers.username, input.username))
-          .limit(1);
-        if (existingUsername.length > 0) {
-          throw new TRPCError({ code: "CONFLICT", message: "Username already taken" });
-        }
+      const existingUsername = await db
+        .select()
+        .from(localUsers)
+        .where(eq(localUsers.username, input.username))
+        .limit(1);
 
-        const existingEmail = await db
-          .select()
-          .from(localUsers)
-          .where(eq(localUsers.email, input.email))
-          .limit(1);
-        if (existingEmail.length > 0) {
-          throw new TRPCError({ code: "CONFLICT", message: "Email already registered" });
-        }
-
-        const passwordHash = await bcrypt.hash(input.password, 10);
-
-        const result = await db.insert(localUsers).values({
-          username: input.username,
-          email: input.email,
-          displayName: input.displayName || input.username,
-          passwordHash,
-          role: "user",
-          isActive: 1,
-          isBlocked: 0,
-        });
-
-        const userId = Number(result[0].insertId);
-        const token = await signLocalToken(userId);
-
-        return {
-          token,
-          user: {
-            id: userId,
-            username: input.username,
-            email: input.email,
-            name: input.displayName || input.username,
-            role: "user",
-          },
-        };
-      } catch (error) {
-        if (error instanceof TRPCError) throw error;
-        console.error("Register error:", error);
+      if (existingUsername.length > 0) {
         throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to create account. Please try again.",
+          code: "CONFLICT",
+          message: "Username already taken",
         });
       }
+
+      const existingEmail = await db
+        .select()
+        .from(localUsers)
+        .where(eq(localUsers.email, input.email))
+        .limit(1);
+
+      if (existingEmail.length > 0) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "Email already registered",
+        });
+      }
+
+      const passwordHash = await bcrypt.hash(input.password, 10);
+
+      const result = await db.insert(localUsers).values({
+        username: input.username,
+        email: input.email,
+        displayName: input.displayName || input.username,
+        passwordHash,
+        role: "user",
+        isActive: 1,
+        isBlocked: 0,
+      });
+
+      const userId = Number(result[0].insertId);
+      const token = await signLocalToken(userId);
+
+      return {
+        token,
+        user: {
+          id: userId,
+          username: input.username,
+          email: input.email,
+          name: input.displayName || input.username,
+          role: "user",
+        },
+      };
     }),
 
   login: publicQuery
@@ -82,68 +81,84 @@ export const localAuthRouter = createRouter({
       }),
     )
     .mutation(async ({ input }) => {
-      try {
-        const db = getDb();
+      const db = getDb();
 
-        const users = await db
-          .select()
-          .from(localUsers)
-          .where(
-            or(
-              eq(localUsers.username, input.identifier),
-              eq(localUsers.email, input.identifier),
-            ),
-          )
-          .limit(1);
+      const users = await db
+        .select()
+        .from(localUsers)
+        .where(
+          or(
+            eq(localUsers.username, input.identifier),
+            eq(localUsers.email, input.identifier),
+          ),
+        )
+        .limit(1);
 
-        if (users.length === 0) {
-          throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid credentials" });
-        }
-
-        const user = users[0];
-        const valid = await bcrypt.compare(input.password, user.passwordHash);
-
-        if (!valid) {
-          throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid credentials" });
-        }
-
-        if (user.isBlocked || !user.isActive) {
-          throw new TRPCError({ code: "FORBIDDEN", message: "This account is unavailable" });
-        }
-
-        const token = await signLocalToken(user.id);
-
-        return {
-          token,
-          user: {
-            id: user.id,
-            username: user.username,
-            email: user.email,
-            name: user.displayName || user.username,
-            role: user.role,
-          },
-        };
-      } catch (error) {
-        if (error instanceof TRPCError) throw error;
-        console.error("Login error:", error);
+      if (users.length === 0) {
         throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Login failed. Please check your credentials and try again.",
+          code: "UNAUTHORIZED",
+          message: "Invalid credentials",
         });
       }
+
+      const user = users[0];
+      const valid = await bcrypt.compare(input.password, user.passwordHash);
+
+      if (!valid) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Invalid credentials",
+        });
+      }
+
+      if (user.isBlocked || !user.isActive) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "This account is unavailable",
+        });
+      }
+
+      const token = await signLocalToken(user.id);
+
+      return {
+        token,
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          name: user.displayName || user.username,
+          role: user.role,
+        },
+      };
     }),
 
-  // ✅ Now uses context (much faster + consistent with authRouter)
-  me: publicQuery.query(({ ctx }) => {
-    if (!ctx.localUser) return null;
+  me: publicQuery.query(async ({ ctx }) => {
+    try {
+      const token =
+        ctx.req.headers.get("x-local-auth-token") ||
+        ctx.req.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
 
-    return {
-      id: ctx.localUser.id,
-      username: ctx.localUser.username,
-      email: ctx.localUser.email,
-      name: ctx.localUser.displayName || ctx.localUser.username,
-      role: ctx.localUser.role,
-    };
+      if (!token) {
+        return null;
+      }
+
+      const user = await verifyLocalToken(token);
+
+      if (!user) {
+        return null;
+      }
+
+      return {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        name: user.displayName || user.username,
+        role: user.role,
+      };
+    } catch (error) {
+      console.error("localAuth.me failed:", error);
+      return null;
+    }
   }),
 
   logout: publicQuery.mutation(async () => {
